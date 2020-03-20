@@ -1,7 +1,6 @@
 ﻿using CityStations.Models;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -62,7 +61,7 @@ namespace CityStations.Controllers
         [Authorize]
         public ActionResult IndexAuthtorize()
         {
-            Logger.WriteLog($"Пользователь {User?.Identity?.GetUserName() ?? "Не определеный пользователь"} зашел в систему!", User.Identity.GetUserId());
+            Logger.WriteLog($"Пользователь {User?.Identity?.GetUserName() ?? "Не определеный пользователь"} зашел в систему!", User?.Identity?.GetUserId()??"HomeController");
             ViewData["MyAcc"] = User?.Identity
                                     ?.Name == "skripinalexey1987@gmail.com";
             return View();
@@ -77,35 +76,6 @@ namespace CityStations.Controllers
             return string.Equals(searchBoxText, "onlyActivateStationAndNothingMore", new StringComparison())
                          ? PartialView(_manager.GetActivStationsAsync().Result)
                          : PartialView(_manager.FindStationOnNamePartAsync(searchBoxText).Result);
-            //var stations = _manager?.GetStations();
-            //if (stations == null)
-            //{
-            //    return null;
-            //}
-            //if (string.IsNullOrEmpty(searchBoxText))
-            //{
-            //    return PartialView(stations);
-            //}
-            //List<StationModel> resultSearch;
-            //if (string.Equals(searchBoxText, "onlyActivateStationAndNothingMore", new StringComparison()))
-            //{
-            //    resultSearch = stations.FindAll(s => s.Active);
-            //}
-            //else
-            //{
-            //    resultSearch = stations.FindAll(s => s.Name.Length >= searchBoxText.Length
-            //                                          && s.Name
-            //                                              .Substring(0, searchBoxText.Length)
-            //                                              .Trim()
-            //                                              .ToLower(CultureInfo.CurrentCulture)
-            //                                              .Contains(searchBoxText.Trim().ToLower(CultureInfo.CurrentCulture)));
-            //}
-            //var searchStations = resultSearch.Count > 100
-            //              ? resultSearch.GetRange(0, 100)
-            //                            .ToList()
-            //              : resultSearch.GetRange(0, resultSearch.Count)
-            //                            .ToList();
-            //return PartialView(searchStations);
         }
 
         [Authorize]
@@ -150,8 +120,8 @@ namespace CityStations.Controllers
             catch (Exception ex)
             {
                 Logger.WriteLog(
-                    $"Пользователь {User.Identity.GetUserId()} - при попытке доступа к настройкам остановочного павильона с идентификатором {stationId} - {Station?.Name}",
-                    User.Identity.GetUserId());
+                    $"Пользователь {User.Identity.GetUserId()} - при попытке доступа к настройкам остановочного павильона с идентификатором {stationId} - {Station?.Name} инициировал ошибку {ex.Message}, подробности {ex.StackTrace}",
+                    User?.Identity?.GetUserId()??"HomeController");
                 ViewData["StationId"] = stationId;
                 return PartialView("Error");
             }

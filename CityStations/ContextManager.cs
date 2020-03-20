@@ -31,11 +31,11 @@ namespace CityStations
                      .ToList();
         }
 
-        public Event CreateEvent(string msg, string initiator)
+        public void CreateEvent(string msg, string initiator)
         {
             if (string.IsNullOrEmpty(msg))
             {
-                return null;
+                return;
             }
             if (string.IsNullOrEmpty(initiator))
             {
@@ -61,10 +61,6 @@ namespace CityStations
                     }
                 }
             }
-            var eventDbNew = db.Events
-                               .ToList()
-                               .Find(e => string.Equals(e.Id, eventDb.Id));
-            return eventDbNew;
         }
 
         public List<Event> GetEventFromDate(DateTime? dateStart, DateTime? dateEnd, EventType? eventType)

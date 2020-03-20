@@ -4,15 +4,15 @@
         <h4 class="card-title">Информационные табло прибытия</h4>
     </div>
     <div class="card-body">
-        <div id="tableContainer" class="table-responsive pt-3 tableContainer">
+        <div id="tableContainer" class="table-responsive tableContainer">
             <table border="0" cellpadding="0" cellspacing="0" width="100%" class="table table-bordered table-hover serch-stations scrollTable">
                 <thead class="fixedHeader">
                 <tr>
-                    <th @*width="10%"*@>#</th>
-                    <th @*width="40%"*@>Наименование остановки</th>
-                    <th @*width="20%"*@>Направление</th>
-                    <th @*width="20%"*@>Список контента</th>
-                    <th @*width="10%"*@>Активирована?</th>
+                    <th width="10%" >#</th>
+                    <th width="40%">Наименование остановки</th>
+                    <th width="20%">Направление</th>
+                    <th width="20%">Список контента</th>
+                    <th width="10%" >Активирована?</th>
                 </tr>
                 </thead>
                 <tbody id="tableBodyId" class="scrollContent">
@@ -30,11 +30,11 @@
                             }
                         }
                         <tr class="variant" onclick="selectSearchResult('@station.Id', '@str')">
-                            <th @*width="10%"*@>#@i</th>
-                            <th @*width="40%"*@>@station.Name</th>
-                            <th @*width="20%"*@>@station.Description</th>
-                            <th @*width="20%"*@>@contents</th>
-                            <th @*width="10%"*@>
+                            <th width="10%">#@i</th>
+                            <th width="40%">@station.Name</th>
+                            <th width="20%">@station.Description</th>
+                            <th width="20%">@contents</th>
+                            <th width="10%">
                                 @(station.Active == true
                                     ? "Да"
                                     : "Нет")

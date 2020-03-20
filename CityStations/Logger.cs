@@ -14,7 +14,7 @@ namespace CityStations
             try
             {
                 var manager = new ContextManager();
-                Models.Event ev = manager.CreateEvent(message, initiator);
+                manager.CreateEvent(message, initiator);
             }
             catch (Exception e)
             {

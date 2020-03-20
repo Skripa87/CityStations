@@ -20,15 +20,12 @@
 
 div.tableContainer {
     clear: both;
-    border: 1px solid #963;
-    height: 285px;
-    overflow: auto;
-    width: 900px
+    border: 1px solid #d8d8d8;
 }
 
 html > body div.tableContainer {
     overflow: hidden;
-    width: 900px
+    width: 100%
 }
 
 thead.fixedHeader tr {
@@ -43,7 +40,7 @@ thead.fixedHeader th {
 
 html > body tbody.scrollContent {
     display: block;
-    height: 262px;
+    height: 300px;
     overflow: auto;
     width: 100%
 }
@@ -51,7 +48,7 @@ html > body tbody.scrollContent {
 html > body thead.fixedHeader {
     display: table;
     overflow: auto;
-    width: 100%
+    width: 100%;
 }
 
 div.tableContainer table {
