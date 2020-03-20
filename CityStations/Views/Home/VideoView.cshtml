@@ -1,0 +1,14 @@
+﻿@model CityStations.Models.VideoContent
+@{
+    var cssClass = ViewData["CssClass"];
+}
+<div class="row informationStationForecast">
+    <div class="col-12 @cssClass">
+        <div class="view">
+            <video class="video-fluid" autoplay loop muted>
+                <source src="@Model.PresentContent()" type="video/mp4" />
+            </video>
+            <div class="mask rgba-purple-slight"></div>
+        </div>
+    </div>
+</div>

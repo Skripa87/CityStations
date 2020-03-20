@@ -1,0 +1,150 @@
+﻿@model CityStations.Models.WeatherDateTimeContent
+@{
+    var cssClass = (string)ViewData["CssClass"] ?? "";
+    var imgCss = cssClass + "-img";
+    var width = (int)ViewData["WidthTablo"];
+    var height = (int)ViewData["HeightTablo"];
+    var city = string.Equals(Model.City, "ufa")
+             ? "Уфа"
+             : "Стерлитамак";
+}
+@if (Model != null)
+{
+    var present = (CityStations.Models.WeatherViewModel)(Model.PresentContent());
+    if (cssClass.Contains('4'))
+    {
+        if (width == 320 && height == 80)
+        {
+            <div class="row">
+                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8">
+                    <div class="row informationStationForecast">
+                        <div class="col-xs-2 col-sm-2 col-md-2 col-lg-2 @cssClass">
+                            <img class="img-responsive" src="@present.PrecipationIcon" />
+                        </div>
+                        <div class="col-xs-10 col-sm-10 col-md-10 col-lg-10 @cssClass">
+                            <p class="@(cssClass + "-headerCity")">@city</p>
+                        </div>
+                    </div>
+                    <div class="row informationStationForecast">
+                        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 @cssClass @(cssClass + "-firstRowWeatherRow")">
+                            <p class="@(cssClass + "-infotext")">Температура воздуха @present.TemperatureCelcia</p>
+                        </div>
+                    </div>
+                    <div class="row informationStationForecast">
+                        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 @cssClass">
+                            <p class="@(cssClass + "-infotext")">Ветер @present.DirectionAndSpeedWind</p>
+                        </div>
+                    </div>
+                    <div class="row informationStationForecast">
+                        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 @cssClass">
+                            <p class="@(cssClass + "-infotext")">@present.Precipation</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 @cssClass">
+                    <div class="row informationStationForecast">
+                        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 @cssClass">
+                            <p class="@(cssClass + "-currentDate")">@present.CurrentDate</p>
+                        </div>
+                    </div>
+                    <div class="row informationStationForecast">
+                        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 @cssClass">
+                            <p class="@(cssClass + "-currentTime")">@present.CurrentTime</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        else if (width == 240 && height == 120)
+        {
+            <div class="row first-row240_120">
+                <div class="col-xs-7 col-sm-7 col-md-7 col-lg-7">
+                    <div class="row informationStationForecast row240_120">
+                        <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 @(cssClass + "240_120")">
+                            <img class="img-responsive img240_120" src="@present.PrecipationIcon" />
+                        </div>
+                        <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 @(cssClass + "240_120")">
+                            <p class="@(cssClass + "-headerCity240_120")">@city</p>
+                        </div>
+                    </div>
+                    <div class="row informationStationForecast row240_120">
+                        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 @(cssClass + "240_120") @(cssClass + "-firstRowWeatherRow")">
+                            <p class="@(cssClass + "-infotext")">Температура @present.TemperatureCelcia</p>
+                        </div>
+                    </div>
+                    <div class="row informationStationForecast row240_120">
+                        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 @(cssClass + "240_120")">
+                            <p class="@(cssClass + "-infotext")">Ветер @present.SpeedWind</p>
+                        </div>
+                    </div>
+                    <div class="row informationStationForecast row240_120">
+                        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 @(cssClass + "240_120")">
+                            <p class="@(cssClass + "-infotext")">@present.Precipation</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xs-5 col-sm-5 col-md-5 col-lg-5 @cssClass">
+                    <div class="row informationStationForecast">
+                        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 @(cssClass + "240_120")">
+                            <p class="@(cssClass + "-currentDate")">@present.CurrentDate</p>
+                        </div>
+                    </div>
+                    <div class="row informationStationForecast">
+                        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 @(cssClass + "240_120")">
+                            <p class="@(cssClass + "-currentTime")" style="margin-top:-5px;">@present.CurrentTime</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    if (cssClass.Contains('8'))
+    {
+        <div class="row informationStationForecast">
+            <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 @cssClass">
+                <div class="row informationStationForecast">
+                    <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 @cssClass @imgCss">
+                        <img class="img-responsive" src="@(present?.PrecipationIcon ?? "")" />
+                    </div>
+                    <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 @cssClass">
+                        <p class="@(cssClass + "-textInWeatherHeader")">@city</p>
+                    </div>
+                </div>
+                <div class="row  informationStationForecast">
+                    <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 @cssClass">
+                        <p class="@(cssClass + "infotext") weatherFont">Темп.</p>
+                    </div>
+                    <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 @cssClass">
+                        <p class="@(cssClass + "infotext") weatherFont">@(present?.TemperatureCelcia ?? "")</p>
+                    </div>
+                </div>
+                <div class="row  informationStationForecast">
+                    <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 @cssClass">
+                        <p class="@(cssClass + "infotext") weatherFont">Вет.</p>
+                    </div>
+                    <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 @cssClass">
+                        <p class="@(cssClass + "infotext") weatherFont">@(present?.SpeedWind)</p>
+                    </div>
+                </div>
+                <div class="row  informationStationForecast">
+                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 @cssClass">
+                        <p class="@(cssClass + "infotext") weatherFont">@(present?.Precipation2 ?? "")</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 @cssClass">
+                <div class="row  informationStationForecast">
+                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 @cssClass">
+                        <p class="@(cssClass + "-currentDate")">@(present?.CurrentDate ?? "")</p>
+                    </div>
+                </div>
+                <div class="row  informationStationForecast">
+                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 @cssClass">
+                        <p class="@(cssClass + "-currentTime")">@(present?.CurrentTime ?? "")</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}

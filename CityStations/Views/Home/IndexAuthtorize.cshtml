@@ -1,0 +1,21 @@
+﻿<div class="row searchRow">
+    @*@using (Ajax.BeginForm("SearchBlockPart", "Home", new { }, new AjaxOptions()
+        {
+            UpdateTargetId = "SearchBlockPartId",
+            HttpMethod = "POST",
+            InsertionMode = InsertionMode.Replace
+        }, new { style = "float:left;" }))
+        {
+            @Html.AntiForgeryToken()
+            <span class="input-group-btn">
+                <input id="searchBoxId" name="searchBoxText" type="search" class="form-control" placeholder="Поиск..." value="" onkeyup="findstart()" />
+                <button id="searchBoxButton" type="submit" class="btn btn-default">Найти</button>
+            </span>
+        }*@
+    <div class="col-12 searchRow">
+        <div id="SearchBlockPartId">@Html.Partial("SearchBlockPart", new List<CityStations.Models.StationModel>())</div>
+    </div>
+</div>
+
+
+

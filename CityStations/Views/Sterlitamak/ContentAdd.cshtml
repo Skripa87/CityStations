@@ -1,0 +1,17 @@
+﻿@model CityStations.Models.ContentAddViewModel
+<div id="myModalAddContent" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Добавление контента</h4>
+            </div>
+            <div class="modal-body">
+                <div id="contentModalBodyAddBlockId">
+                    @Html.Partial("SelectContentType", Model)
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

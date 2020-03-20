@@ -1,0 +1,64 @@
+﻿@model List<CityStations.Models.StationModel>
+<div class="card">
+    <div class="card-header">
+        <h4 class="card-title">Информационные табло прибытия</h4>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive pt-3">
+            <table class="table table-bordered table-hover serch-stations">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Наименование остановки</th>
+                    <th>Направление</th>
+                    <th>Список контента</th>
+                    <th>Активирована?</th>
+                </tr>
+                </thead>
+                <tbody id="tableBodyId">
+                @{
+                    var i = 1;
+                    foreach (var station in Model)
+                    {
+                        var str = station.Name + " " + station.Description;
+                        var contents = "";
+                        if (station?.InformationTable?.Contents != null)
+                        {
+                            foreach (var item in station.InformationTable.Contents)
+                            {
+                                contents += (item?.ContentType.ToString() + " " ?? "");
+                            }
+                        }
+                        <tr class="variant" onclick="selectSearchResult('@station.Id', '@str')">
+                            <th>#@i</th>
+                            <th>@station.Name</th>
+                            <th>@station.Description</th>
+                            <th>@contents</th>
+                            <th>
+                                @(station.Active == true
+                                    ? "Да"
+                                    : "Нет")
+                            </th>
+                        </tr>
+                        i++;
+                    }
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    @using (Ajax.BeginForm("SelectStation", "Home", new {}, new AjaxOptions()
+    {
+        HttpMethod = "POST",
+        UpdateTargetId = "wrapper",
+        InsertionMode = InsertionMode.Replace,
+        OnSuccess = "reloadAllContentTriggerGo"
+    }))
+    {
+        @Html.AntiForgeryToken()
+        <button id="selectStationButton" type="submit" hidden style="display: none;"></button>
+        <input id="selectStationId" name="stationId" type="text" value="" hidden/>
+    }
+</div>
+
+

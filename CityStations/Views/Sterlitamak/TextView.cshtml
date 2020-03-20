@@ -1,0 +1,9 @@
+﻿@model CityStations.Models.TextContent
+@{
+    var cssClass = ViewData["CssClass"];
+}
+<div class="row informationStationForecast">
+    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 @cssClass" style="text-align:center; padding-top:@((string)ViewData["CentralPosition"]??"");">
+        @Model.PresentContent()
+    </div>    
+</div>

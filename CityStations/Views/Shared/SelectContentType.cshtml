@@ -1,0 +1,76 @@
+﻿@model CityStations.Models.ContentAddViewModel
+<div class="row">
+    <div class="col-4">
+        <p class="labelp">Выберите тип контента</p>
+    </div>
+    <div class="col-8">
+        @CityStations.Models.BootstrapHtml.Dropdown("dropDownContentAddId", "#contentModalBodyAddBlockId",
+            (List<SelectListItem>) Model.ContentTypeSelectList.Items, "",
+            Url.Action("SelectContentType", "Home"), Model.StationId, null, ViewContext, ViewData)
+    </div>
+</div>
+@if (!string.IsNullOrEmpty(Model?.SelectedContentType)
+             && (Model?.SelectedContentType == "2"
+                 || Model?.SelectedContentType == "3"))
+{
+    using (Ajax.BeginForm("Upload", "Home", new { },new AjaxOptions()
+    {
+        HttpMethod = "POST"        
+    }, new { enctype = "multipart/form-data" }))
+    {
+        @Html.Partial("FileLoad")
+    }
+}
+@using (Ajax.BeginForm("CreateAdditionalContent", "Home", new { stationId = Model?.StationId ?? "" }, new AjaxOptions()
+{
+    HttpMethod = "POST",
+    UpdateTargetId = "informationTableOptionsBlockId",
+    OnSuccess = "removeFadeIn()"
+
+}, new { }))
+{
+    @Html.AntiForgeryToken()
+    @Html.TextBoxFor(m => m.SelectedContentType, new { value = Model.SelectedContentType, id = "selectedContentTypeId", style = "display:none;" })
+    if (!string.IsNullOrEmpty(Model?.SelectedContentType)
+                             && (Model?.SelectedContentType == "1"
+                                 || Model?.SelectedContentType == "4"))
+    {
+        <div class="row">
+            <div class="col-4">
+                <p class="labelp">Введите текст контента</p>
+            </div>
+            <div class="col-8">
+                @Html.TextBoxFor(m => m.InnerContent, new { @class = "inputElements" })
+            </div>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(Model?.SelectedContentType)
+             && Model?.SelectedContentType == "5")
+    {
+        <div class="row">
+            <div class="col-4">
+                <p class="labelp">Введите текст контента</p>
+            </div>
+            <div class="col-8">
+                <textarea name="InnerContent" cols="40" aria-valuetext="" />
+            </div>
+        </div>
+    }
+    <div class="row">
+        <input name="InnerContent" type="text" value="@Model.StationId" style="display:none;" hidden />
+        <div class="col-4">
+            <p class="labelp">Введите продолжительность демонстрации</p>
+        </div>
+        <div class="col-8">
+            @Html.TextBoxFor(m => m.TimeOut, new { @class = "inputElements" })
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-6">
+            <button type="button" class="btn btn-link buttonSaved" data-dismiss="modal">Отмена</button>
+        </div>
+        <div class="col-6">
+            <button type="submit" class="btn btn-link buttonSaved">Сохранить</button>
+        </div>
+    </div>
+}

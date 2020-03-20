@@ -1,0 +1,13 @@
+﻿@model List<CityStations.Models.StationModel>
+@foreach (var station in Model)
+{
+    var str = station.Name + " " + station.Description; 
+    <div class="row">
+        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 searchBlockHelper">
+            <p class="variant" onclick="selectSearchResult('@station.Id', '@str')">@str</p>
+        </div>
+    </div>
+}
+
+
+

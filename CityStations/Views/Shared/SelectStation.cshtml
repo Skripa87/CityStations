@@ -1,0 +1,64 @@
+﻿@model CityStations.Models.StationViewModel
+@{
+    ViewBag.Title = "Настройка остановки";
+}
+@*<div class="container-fluid">*@
+<div class="card">
+    <div class="card-body">
+        @if (Model != null)
+        {
+
+            <div class="row">
+                <div class="col-12 selectStation">
+                    <h3>@Model.Name @Model.Description </h3>
+                </div>
+            </div>
+            if (Model.Active)
+            {
+                <div class="row searchRowHead">
+                    <div class="col-6 selectStation leftOptionBlock">
+                        <h3>Настройки информационного табло</h3>
+                    </div>
+                    <div class="col-6 selectStation">
+                        <h3>Предпросмотр информационного табло</h3>
+                    </div>
+                </div>
+                <div id="previewAndOptionsBlockId" class="row searchRow">
+                    @Html.Partial("PreviewAndOptionsBlock", Model.OptionsAndPreviewModel, ViewData)
+                </div>
+            }
+            else
+            {
+                <div class="row">
+                    <div id="informationTable" class="col-12 selectStation">
+                        <h3>
+                            Информационное табло не установлено или не активировано,
+                            для настройки параметров необходимо активировать информационное табло
+                        </h3>
+                    </div>
+                </div>
+                using (Html.BeginForm("ActivateInformationTable", "Home", new {stationId = Model.StationId}, FormMethod.Post, new {@class = "informationTable"}))
+                {
+                    @Html.AntiForgeryToken()
+    <button class="btn btn-link" id="activateInformationTableButtonId" type="submit">Активировать информационное табло</button>
+                    @*<div class="row">
+                        <div id="informationTable" class="col-12 selectStation">
+                            <label>
+                                Активировать информационное табло
+                                <input type="checkbox" name="isActive" class="checkBoxActiveInformationTable" onclick="formActivateInformationTableSubmit()" />
+                            </label>
+                        </div>
+                    </div>*@
+                }
+            }
+        }
+        else
+        {
+            <div class="row">
+                <div class="col-12 selectStation">
+                    <h3 class="header">Вы не выбрали остановку!</h3>
+                </div>
+            </div>
+        }
+    </div>
+    </div>

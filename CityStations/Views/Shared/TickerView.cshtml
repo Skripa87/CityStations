@@ -1,0 +1,9 @@
+﻿@model CityStations.Models.TickerContent
+@{
+    var cssClass = ViewData["CssClass"];
+}
+<div class="row informationStationForecast">
+    <div class="col-12 @cssClass" style="animation: tikerLine @(Model?.TimeOut + 3 ?? 0)s linear forwards;text-align:center; padding-top:@((string)ViewData["CentralPosition"]??"");">
+        @Model.PresentContent()
+    </div>
+</div>

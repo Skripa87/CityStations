@@ -1,0 +1,49 @@
+﻿@using CityStations.Models
+@model CityStations.Models.IContent
+<button id="specButton" type="button" onclick="changeVisibleContent('@(Model?.TimeOut ?? 0)')" style="display:none;" hidden></button>
+@if (Model != null)
+{
+    if (Model.ContentType == ContentType.FORECAST)
+    {
+        @Html.Partial("StationForecastView", (ForecastContent)Model, ViewData)
+    }
+    else if (Model.ContentType == ContentType.WEATHER_DATE_TIME)
+    {
+        @Html.Partial("WeatherDateTimeView", (WeatherDateTimeContent)Model, ViewData)
+    }
+    else if (Model.ContentType == ContentType.DATE_TIME)
+    {
+        @Html.Partial("DateTimeView", (DateTimeContent)Model, ViewData)
+    }
+    else if (Model.ContentType == ContentType.PICTURE)
+    {
+        @Html.Partial("PictureView", (PictureContent)Model, ViewData)
+    }
+    else if (Model.ContentType == ContentType.TEXT)
+    {
+        @Html.Partial("TextView", (TextContent)Model, ViewData)
+    }
+    else if (Model.ContentType == ContentType.TICKER)
+    {
+        @Html.Partial("TickerView", (TickerContent)Model, ViewData)
+    }
+    else if (Model.ContentType == ContentType.TICKER_VERTICAL)
+    {
+        @Html.Partial("TickerVerticalView", (TickerVerticalContent)Model, ViewData)
+    }
+    else if (Model.ContentType == ContentType.VIDEO)
+    {
+        @Html.Partial("VideoView", (VideoContent)Model, ViewData)
+    }
+}
+@using (Ajax.BeginForm("CurrentContentView", "Home", new { index = Model?.IndexInContent ?? 0 }, new AjaxOptions()
+{
+    HttpMethod = "POST",
+    UpdateTargetId = "blockForecastStationId",
+    InsertionMode = InsertionMode.Replace,
+    OnSuccess = String.Format("changeVisibleContent('{0}')", ViewData["timeOutNextContent"])
+}, new { }))
+{
+    @Html.AntiForgeryToken()
+    <button id="updateBlockContentInformationTabloId" class="btn btn-link" type="submit" style="display:none;" hidden>Refresh</button>
+}

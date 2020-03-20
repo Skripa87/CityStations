@@ -1,0 +1,68 @@
+﻿@using CityStations.Models
+@model LoginViewModel
+@{
+    ViewBag.Title = "Выполнить вход";
+}
+<div class="row">
+    <div class="col-12">
+        <section id="loginForm">
+            @using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "container login-class", role = "form" }))
+            {
+                @Html.AntiForgeryToken()
+                <div class="row">
+                    <div class="col-5">
+                        <img class="img-fluid" src="~/Content/Images/icons/icon-512x512.png" />
+                    </div>
+                    <div class="col-7">
+                        <div class="row app-name">
+                            <div class="col-12">
+                                <p class="login-header">Программный комплекс "ГЕРОЛЬД"</p>
+                            </div>
+                        </div>
+                        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                        @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
+                        @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text info-input">Логин</span>
+                            </div>
+                            @Html.TextBoxFor(m => m.Email, new { @class = "form-control" })
+
+                        </div>
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text info-input">Пароль</span>
+                            </div>
+                            @Html.PasswordFor(m => m.Password, new { @class = "form-control" })
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-check form-check-success">
+                                    <label class="form-check-label">
+                                        @Html.CheckBoxFor(m => m.RememberMe, new { @class = "form-check-input" })
+                                        Запомнить меня
+                                        <i class="input-helper"></i>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12 box-for-button">
+                                <input type="submit" value="Вход" class="btn btn-light logon-btn" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12 textAboutApp">
+                                <p class="logon-info">&copy;Программный комплекс "Герольд" - система управления сетью информационных табло, установленных в остановочных павильонах города.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

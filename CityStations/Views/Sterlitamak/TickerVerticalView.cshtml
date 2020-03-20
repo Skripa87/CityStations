@@ -1,0 +1,18 @@
+﻿@model CityStations.Models.TickerVerticalContent
+@{
+    var cssClass = ViewData["CssClass"];
+    var content = (List<string>)Model.PresentContent();
+}
+@if (content.Any())
+{
+    <div  style="animation: tikerVertical @(Model?.TimeOut + 3 ?? 0)s linear forwards; text-align: center; padding-top: @((string) ViewData["CentralPosition"] ?? "");">
+    @foreach (var item in content)
+    {
+        <div class="row informationStationForecast">
+            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 @cssClass">
+                @item
+            </div>
+        </div>
+    }
+    </div>
+}

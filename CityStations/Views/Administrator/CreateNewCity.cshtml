@@ -1,0 +1,29 @@
+﻿@model CityStations.Models.CreateNewCityViewModel
+@using (Ajax.BeginForm("CreateNewCity", new AjaxOptions()
+{
+    HttpMethod = "POST",
+    InsertionMode = InsertionMode.Replace,
+    UpdateTargetId = "adminBlockId"
+}))
+{
+    if (ViewBag.Error != null)
+    {
+        <p class="dialogSystem">ViewBag.Error</p>
+    }
+        <div class="row">
+            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                @Html.TextBoxFor(m => m.CityName)
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                @Html.TextBoxFor(m => m.CityKey)
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                <button class="btn buttonSaved" type="submit">Добавить</button>
+            </div>
+        </div>
+    }
+

@@ -1,0 +1,12 @@
+﻿@using CityStations.Models
+@model CityStations.Models.InformationTableViewModel
+@{
+    var css = ViewData["CssClass"] = Model?.CssClass ?? "p4cssClass";
+    var centralPosition = ViewData["CentarlPosition"] = ((int)((Model?.Height ?? 80) / 2) - 10) + "px";
+    var width = ViewData["WidthTablo"] = Model?.Width ?? 320;
+    var height = ViewData["HeightTablo"] = Model?.Height ?? 80;
+}
+
+<div id="blockForecastStationId" class="informationTableBlock @(css  + "FontSize")" style="width:@(width + "px"); height:@(height + "px"); ">
+    @Html.Partial("CurrentContentView", Model?.CurrentContent ?? new DateTimeContent(15,0), ViewData)
+</div>

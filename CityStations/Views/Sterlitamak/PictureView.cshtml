@@ -1,0 +1,9 @@
+﻿@model CityStations.Models.PictureContent
+@{
+    var cssClass = ViewData["CssClass"];
+}
+<div class="row informationStationForecast">
+    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 @cssClass">
+        <img class="img-responsive" src="@Model.PresentContent()"/>
+    </div>
+</div>

@@ -1,0 +1,87 @@
+﻿@model CityStations.Models.ContentOption
+
+@if (Model != null)
+{
+    <div class="row">
+        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="text-align:center;">
+            <p class="labelp">@Model.Description</p>
+        </div>
+    </div>
+    using (Ajax.BeginForm("ContentOption", "Home", new { contentId = Model.ContentId, stationId = Model.StationId }, new AjaxOptions()
+    {
+        UpdateTargetId = Model.ContentId,
+        HttpMethod = "POST",
+        InsertionMode = InsertionMode.Replace
+    }, new { }))
+    {
+        @Html.AntiForgeryToken()
+        <input name="contentType" type="text" value="@(Model.SelectedContentType)" hidden />
+        if (string.Equals(Model.SelectedContentType, ((int)CityStations.Models.ContentType.TEXT).ToString())
+            || string.Equals(Model.SelectedContentType, ((int)CityStations.Models.ContentType.TICKER).ToString()))
+        {
+            <div class="row">
+                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8">
+                    <p class="labelp">@Model.InputDescription</p>
+                </div>
+                <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
+                    <input name="innerContent" class="inputElements" type="text" value="@(Model?.InnerContent ?? "")" />
+                </div>
+            </div>
+        }
+        else if (string.Equals(Model.SelectedContentType, ((int)CityStations.Models.ContentType.TICKER_VERTICAL).ToString()))
+        {
+            <div class="row">
+                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8">
+                    <p class="labelp">@Model.InputDescription</p>
+                </div>
+                <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
+                    <textarea name="innerContent" class="inputElements" cols="40">@(Model?.InnerContent ?? "")</textarea>
+                </div>
+            </div>
+        }
+        else if (string.Equals(Model.SelectedContentType, ((int)CityStations.Models.ContentType.VIDEO).ToString())
+                || string.Equals(Model.SelectedContentType, ((int)CityStations.Models.ContentType.PICTURE).ToString()))
+        {
+            <div class="row">
+                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8">
+                    <p class="labelp">@Model.InputDescription</p>
+                </div>
+                <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
+                    <input name="innerContent" class="inputElements" type="file" />
+                </div>
+            </div>
+        }
+        else if (string.Equals(Model.SelectedContentType, ((int)CityStations.Models.ContentType.DATE_TIME).ToString())
+                    || string.Equals(Model.SelectedContentType, ((int)CityStations.Models.ContentType.WEATHER_DATE_TIME).ToString()))
+        {
+            <input name="innerContent" class="inputElements" type="text" value="@(Model?.InnerContent ?? "")" style="display:none;" hidden />
+        }
+        <div class="row">
+            <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8">
+                <p class="labelp">Введите продолжительность показа контента.</p>
+            </div>
+            <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
+                <input name="contentTimeout" class="inputElements" type="number" value="@(Model?.Timeout ?? 0)" />
+            </div>
+        </div>
+        <div class="row" style="display: none;">
+            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                <button id="@("buttonContentSaved" + Model?.ContentId)" type="submit" class="btn btn-link buttonSaved buttonContentSaved">Сохранить</button>
+            </div>
+        </div>
+    }
+    if (!string.Equals(Model.SelectedContentType, ((int)CityStations.Models.ContentType.FORECAST).ToString()))
+    {
+        <div class="row">
+            <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                <p class="labelp">Удаление контента</p>
+            </div>
+            <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                <button type="button" data-toggle="modal" data-target="#myModalRemoveContent" onclick="buferedIdRemovedContent('@Model.ContentId')"><i class="fa fa-trash" aria-hidden="true"></i></button>
+            </div>
+        </div>
+    }
+}
+
+
+

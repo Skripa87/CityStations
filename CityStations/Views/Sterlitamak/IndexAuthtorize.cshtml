@@ -1,0 +1,43 @@
+﻿@{
+    ViewBag.Title = "Перечень остановок";
+}
+@if ((bool)(ViewData["MyAcc"]))
+{
+    <li>@Html.ActionLink("Регистрация", "Register", "Account", routeValues: null, htmlAttributes: new { id = "registerLink" })</li>    
+}
+<div class="row  searchRowHead">
+    <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 searchRow">
+        <h5 class="headerBox">Введите часть названия остановки</h5>
+    </div>
+    <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 searchRow">
+        <h5 class="headerBox">Результаты поиска</h5>
+    </div>
+</div>
+<div class="row searchRow">
+    <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 searchRow">
+        @using (Ajax.BeginForm("SearchBlockPart", "Home", new { }, new AjaxOptions()
+        {
+            UpdateTargetId = "SearchBlockPartId",
+            HttpMethod = "POST",
+            InsertionMode = InsertionMode.Replace
+        }, new { style = "float:left;" }))
+        {
+            @Html.AntiForgeryToken()
+            <span class="input-group-btn">
+                <input id="searchBoxId" name="searchBoxText" type="search" class="form-control" placeholder="Поиск..." value="" onkeyup="findstart()" />
+                <button id="searchBoxButton" type="submit" class="btn btn-default">Найти</button>
+            </span>
+        }
+        @using (Html.BeginForm("SelectStation", "Home", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+            <button id="selectStationButton" type="submit" hidden style="display:none;"></button>
+            <input id="selectStationId" name="stationId" type="text" value="" hidden />
+        }
+    </div>
+    <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 searchRow">
+        <div id="SearchBlockPartId">@Html.Partial("SearchBlockPart", new List<CityStations.Models.StationModel>())</div>
+    </div>
+</div>
+
+

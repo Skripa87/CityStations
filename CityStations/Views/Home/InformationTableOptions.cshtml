@@ -1,0 +1,183 @@
+﻿@using CityStations.Models
+@model CityStations.Models.OptionsViewModel
+<div class="card">
+    <div class="card-body">
+        @if (Model != null)
+        {
+            <div class="row moduleTypeSelectedRow">
+                <div class="col-8 ">
+                    <p> Тип модуля, используемый в табло: </p>
+                </div>
+                <div class="col-4 ">
+                    @BootstrapHtml.Dropdown("moduleTypeSelectDropdownId", "#previewAndOptionsBlockId",
+                        (Model?.ModuleTypes == null
+                            ? new List<SelectListItem>()
+                            : (List<SelectListItem>)(Model.ModuleTypes.Items)), "Выбирите тип модуля",
+                        Url.Action("SelectModuleType", "Home"), ((Model?.InformationTableId ?? "") + ";" + (Model?.StationId ?? "")), null, ViewContext, ViewData)
+                </div>
+            </div>
+            using (Ajax.BeginForm("SaveChangeOptions", "Home", new { informationTableId = Model?.InformationTableId ?? "", stationId = Model?.StationId ?? "" }, new AjaxOptions()
+            {
+                HttpMethod = "POST",
+                InsertionMode = InsertionMode.Replace,
+                UpdateTargetId = "previewAndOptionsBlockId"
+            }, new { id = "FormSaveChangeOptionsId" }))
+            {
+                @Html.AntiForgeryToken()
+                <div class="row">
+                    <div class="col-8 ">
+                        <p> Ширина табло в модулях: </p>
+                    </div>
+                    <div class="col-4">
+                        <input class="inputElements" name="widthWithModules" type="number" value="@(Model != null
+                                                                                                      ? Model?.WidthWithModules
+                                                                                                          .ToString()
+                                                                                                      : "")" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-8 ">
+                        <p>Высота табло в модулях</p>
+                    </div>
+                    <div class="col-4 ">
+                        <input class="inputElements" name="heightWithModules" type="number" value="@(Model != null
+                                                                                                       ? Model.HeightWithModules
+                                                                                                           .ToString()
+                                                                                                       : "")" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-8 ">
+                        <p>Число строк с прогнозом прибытия транспорта:</p>
+                    </div>
+                    <div class="col-4 ">
+                        <input class="inputElements" name="rowCount" type="number" value="@(Model != null
+                                                                                              ? Model.RowCount
+                                                                                                  .ToString()
+                                                                                              : "")" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <button id="buttonSaveOptionsAndContent" class="btn btn-link buttonSaved" type="submit" style="display: none;" hidden></button>
+                    </div>
+                </div>
+            }
+            <hr>
+            <section id="contentSection">
+                @if (Model?.ContentOptions != null)
+                {
+                    foreach (var item in Model.ContentOptions)
+                    {
+                        <div class="row contentOptionRow">
+                            <div id="@item.ContentId" class="col-12">
+                                @Html.Partial("ContentOption", item)
+                            </div>
+                        </div>
+                        <hr>
+                    }
+                    using (Ajax.BeginForm("ContentAdd", "Home", new { }, new AjaxOptions()
+                    {
+                        HttpMethod = "POST",
+                        InsertionMode = InsertionMode.Replace,
+                        UpdateTargetId = "modalWindowForContentAddViewModel",
+                    }, new { }))
+                    {
+                        @Html.AntiForgeryToken()
+                        <div class="row">
+                            <div class="col-4 left-col">
+                                <button id="buttonModalAddcontent" type="button" class="btn btn-link buttonSaved" data-toggle="modal" data-target="#myModalAddContent"><i class="mdi mdi-plus"></i></button>
+                            </div>
+                            <div class="col-4 center-col">
+                                <button id="saveAllParametrsInformationTable" class="btn btn-link buttonSaved" type="button" onclick="saveOptionsAndContentInformationTable()"><i class="mdi mdi-content-save-all"></i></button>
+                            </div>
+                            <div class="col-4 right-col">
+                                <button id="buttonModalDeactivateInformTable" type="button" class="btn btn-link buttonSaved" data-toggle="modal" data-target="#myModalDeactivateInformTable"><i class="mdi mdi-eye-off"></i></button>
+                            </div>
+                        </div>
+                    }
+                }
+                <div class="row" style="margin-top: 10px;">
+                    <div class="col-12 selectStation">
+                        <a class = "btn btn-link buttonSaved" href="@Url.Action("CreateConfigFile","Home",new {stationId=Model?.StationId})" style="width: 155px;"><i class="mdi mdi-download"></i></a>
+                    </div>
+                </div>
+            </section>
+            ViewData["stationId"] = Model?.StationId;
+            <div id="modalWindowForContentAddViewModel">
+                @Html.Partial("ContentAdd", Model?.ContentAddViewModel ?? new ContentAddViewModel(), ViewData)
+            </div>
+
+            <div id="myModalRemoveContent" class="modal fade" role="dialog">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            <h4 class="modal-title">Удаление контента</h4>
+                        </div>
+                        <div class="modal-body">
+                            <p>Вы уверены что хотите удалить, выбранный контент</p>
+                        </div>
+                        <div class="modal-footer">
+                            @using (Ajax.BeginForm("RemoveContent", "Home", new { stationId = Model?.StationId ?? "" }, new AjaxOptions()
+                            {
+                                HttpMethod = "POST",
+                                UpdateTargetId = "informationTableOptionsBlockId",
+                                InsertionMode = InsertionMode.Replace,
+                                OnSuccess = "removeFadeIn()"
+                            }, new { }))
+                            {
+                                @Html.AntiForgeryToken()
+                                <input name="contentId" id="removedContentIdBufferId" type="text" value="" hidden />
+                                <div class="col-6" style="text-align: left;">
+                                    <button type="submit" class="btn btn-link buttonSaved">Да</button>
+                                </div>
+                                <div class="col-6" style="text-align: right;">
+                                    <button type="button" class="btn btn-link buttonSaved" data-dismiss="modal">Отмена</button>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="myModalDeactivateInformTable" class="modal fade" role="dialog">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            <h4 class="modal-title">Деактивация информационного табло</h4>
+                        </div>
+                        <div class="modal-body">
+                            <p>Вы уверены что хотите деактивировать информационное табло на остановке @Model.StationName ?</p>
+                            <p>Деактивация табло сделает его недоступным для клиентского оборудования информационного табло!</p>
+                            <p>Все настройки будут востановленны после активации.</p>
+                        </div>
+                        <div class="modal-footer">
+                            @using (Html.BeginForm("DeactivateInformationTable", "Home", new { stationId = Model?.StationId ?? "" }, FormMethod.Post))
+                            {
+                                @Html.AntiForgeryToken()
+                                <input name="contentId" id="removedContentIdBufferId" type="text" value="" hidden />
+                                <div class="col-6" style="text-align: left;">
+                                    <button type="submit" class="btn btn-link buttonSaved">Деактивация</button>
+                                </div>
+                                <div class="col-6" style="text-align: right;">
+                                    <button type="button" class="btn btn-link buttonSaved" data-dismiss="modal">Отмена</button>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="row">
+                <div class="col-12 selectStation">
+                    <h3>Вы не выбрали остановку!</h3>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+

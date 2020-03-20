@@ -1,0 +1,58 @@
+﻿@model CityStations.Models.DateTimeContent
+@{
+    var cssClass = (string)ViewData["CssClass"] ?? "";
+    var width = (int)(ViewData["WidthTablo"]??320);
+    var height = (int)(ViewData["HeightTablo"]??80);
+    var city = "Уфа";
+}
+@if (Model != null)
+{
+    var present = (CityStations.Models.DateTimeViewModel)(Model.PresentContent());
+    <div class="row">
+        <div class="col-6">
+            <div class="row informationStationForecast">
+                <div class="col-12 @cssClass">
+                    <img class="img-fluid" style="height: 80px;" src="~/Content/Images/flag.png" />
+                
+                    <p class="ufa">Уфа</p></div>
+            </div>
+        </div>
+        <div class="col-6 @cssClass" style="padding-left: 35px">
+            <div class="row informationStationForecast">
+                <div class="col-12 @cssClass">
+                    <p class="@(cssClass + "-currentDate")">@present.CurrentDate</p>
+                </div>
+            </div>
+            <div class="row informationStationForecast">
+                <div class="col-12 @cssClass">
+                    <p class="@(cssClass + "-currentTime")">@present.CurrentTime</p>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="row">
+        <div class="col-6">
+            <div class="row informationStationForecast">
+                <div class="col-12 @cssClass">
+                    <img class="img-fluid" style="height: 80px;" src="~/Content/Images/flag.png" />
+                    <p class="ufa">Уфа</p>
+                    </div>
+            </div>
+        </div>
+        <div class="col-6 @cssClass" style="padding-left: 35px">
+            <div class="row informationStationForecast">
+                <div class="col-12 @cssClass">
+                    <p class="@(cssClass + "-currentDate")">@DateTime.Now.ToString("dd:MM:yyyy")</p>
+                </div>
+            </div>
+            <div class="row informationStationForecast">
+                <div class="col-12 @cssClass">
+                    <p class="@(cssClass + "-currentTime")">@DateTime.Now.ToString("HH:mm")</p>
+                </div>
+            </div>
+        </div>
+    </div>
+}

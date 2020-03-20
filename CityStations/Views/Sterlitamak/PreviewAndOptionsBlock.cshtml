@@ -1,0 +1,7 @@
+﻿@model CityStations.Models.OptionsAndPreviewViewModel
+    <div id="informationTableOptionsBlockId" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 selectStation leftOptionBlock">
+        @Html.Partial("InformationTableOptions", Model.Options, ViewData)
+    </div>
+    <div id="InformationTableBlockId" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 selectStation">
+        @Html.Partial("InformationTableView", Model.InformationTablePreview, ViewData)
+    </div>

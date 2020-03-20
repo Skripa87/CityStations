@@ -1,0 +1,10 @@
+﻿@model CityStations.Models.InformationTableViewModel
+@{
+    ViewData["CssClass"] = Model.CssClass;
+    ViewData["CentarlPosition"] = ((int)(Model.Height / 2) - 10) + "px";
+    ViewData["WidthTablo"] = Model.Width;
+    ViewData["HeightTablo"] = Model.Height;
+}
+<div id="blockForecastStationId" class="informationTableBlock @(Model.CssClass + "FontSize")" style="width:@(Model.Width + "px"); height:@(Model.Height + "px"); ">
+    @Html.Partial("CurrentContentView", Model?.CurrentContent, ViewData)
+</div>
