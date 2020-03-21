@@ -18,6 +18,7 @@ namespace CityStations.Models
         public bool Type { get; set; }
         public bool Active { get; set; }
         public string AccessCode { get; set; }
+        public string IpDevice { get; set; }
         public virtual InformationTable InformationTable { get; set; }
 
         public StationModel() { }

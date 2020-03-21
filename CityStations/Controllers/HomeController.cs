@@ -439,6 +439,14 @@ namespace CityStations.Controllers
             }
         }
 
+        public PartialViewResult SetConfiguration(string stationId, string ip)
+        {
+            var deviceManager = new DeviceManager("pi", "$olnechniKrug2019");
+            if (string.IsNullOrEmpty(ip)) return PartialView("SelectStation", Station);
+            deviceManager.ConfigurateDevice(ip, stationId);
+            return PartialView("SelectStation",Station);
+        }
+
         public FileResult CreateConfigFile(string stationId)
         {
             byte[] buffer = new byte[1024];
