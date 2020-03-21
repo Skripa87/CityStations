@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Web;
+using CityStations.Models;
 using Renci.SshNet;
 using Renci.SshNet.Common;
 
@@ -14,20 +12,32 @@ namespace CityStations
         private readonly string _userName;
         private readonly string _password;
 
-        private bool CheckConfigDevice(string ipAddressDevice)
+        public void RebootStations()
         {
-            if (_password != null && _userName != null && ipAddressDevice != null)
+            var manager = new ContextManager();
+            var stations = manager.GetActivStation();
+            if (_password != null && _userName != null && stations != null)
             {
-                using (var sshClient = new SshClient(ipAddressDevice, _userName, _password))
+                foreach (var station in stations)
                 {
-                    sshClient.Connect();
-                    var command = sshClient.CreateCommand("ls .config/autostart", Encoding.UTF8);
-                    command.Execute();
-                    var answer = command.Result;
-                    return answer.Contains("chromium.desktop\n");
-                };
+                    if (string.IsNullOrEmpty(station.IpDevice)) continue;
+                    using (var sshClient = new SshClient(station.IpDevice, _userName, _password))
+                    {
+                        try
+                        {
+                            sshClient.Connect();
+                        }
+                        catch(Exception ex)
+                        {
+                            Logger.WriteLog(
+                                $"Произошла ошибка при попытки соеденения {ex.Message}, подробности {ex.StackTrace}",
+                                "RebootDevices");
+                        }
+                        var command = sshClient.CreateCommand("sudo reboot now\n", Encoding.UTF8);
+                        command.Execute();
+                    }
+                }
             }
-            return false;
         }
 
         public void ConfigurateDevice(string ipAddressDevice, string stationId)

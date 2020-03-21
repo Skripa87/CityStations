@@ -193,7 +193,8 @@ namespace CityStations
                                                                    .ConfigureAwait(false);
             var normalFinderString = finderString.Trim(' ')
                 .ToUpperInvariant();
-            return db.Stations
+            var stations = db.Stations.ToList();
+            return stations
                 .Any(s => s.Name
                               .Trim(' ')
                               .ToUpperInvariant()
@@ -201,23 +202,22 @@ namespace CityStations
                           || normalFinderString.Contains(s.Name
                               .Trim(' ')
                               .ToUpperInvariant()))
-                ? await db.Stations
-                    .Where(s => s.Name
+                ? stations
+                    .FindAll(s => s.Name
                                     .Trim(' ')
                                     .ToUpperInvariant()
                                     .Contains(normalFinderString)
                                 || normalFinderString.Contains(s.Name
                                     .Trim(' ')
-                                    .ToUpperInvariant())).ToListAsync().ConfigureAwait(false)
-                : await db.Stations
-                    .Where(s => s.Name
+                                    .ToUpperInvariant()))
+                : stations.FindAll(
+                    s => s.Name
                                     .Trim(' ')
                                     .ToUpperInvariant()
                                     .Contains(normalFinderString.Substring(0, normalFinderString.Length / 2))
                                 || normalFinderString.Contains(s.Name
                                     .Trim(' ')
-                                    .ToUpperInvariant()))
-                    .ToListAsync().ConfigureAwait(false);
+                                    .ToUpperInvariant()));
         }
 
         public StationModel DeactivateInformationTable(string stationId)
@@ -465,6 +465,34 @@ namespace CityStations
                            : null;
             if (informationTable == null || moduleType == null) return;
             informationTable.ModuleType = moduleType;
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (System.Data.Entity.Validation.DbEntityValidationException dbEx)
+            {
+                Exception raise = dbEx;
+                foreach (var validationErrors in dbEx.EntityValidationErrors)
+                {
+                    foreach (var validationError in validationErrors.ValidationErrors)
+                    {
+                        string message = $"{validationErrors.Entry.Entity}:{validationError.ErrorMessage}";
+                        raise = new InvalidOperationException(message, raise);
+                    }
+                }
+            }
+        }
+
+        public void SetIpAddressDevice(string stationId, string ipAddress)
+        {
+            if (string.IsNullOrEmpty(stationId)) return;
+            var station = db.Stations.Any(s => string.Equals(s.Id, stationId))
+                ? db.Stations.FirstOrDefault(s => string.Equals(s.Id, stationId))
+                : null;
+            if (station == null) return;
+            station.IpDevice = string.IsNullOrEmpty(station.IpDevice) || !string.Equals(station.IpDevice,ipAddress) 
+                             ? ipAddress
+                             :station.IpDevice;
             try
             {
                 db.SaveChanges();

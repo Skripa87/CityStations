@@ -399,6 +399,7 @@ namespace CityStations.Models
         public int WidthWithModules { get; set; }
         public int HeightWithModules { get; set; }
         public int RowCount { get; set; }
+        public string IpAddress { get; set; }
         public List<ContentOption> ContentOptions { get; set; }
         public ContentAddViewModel ContentAddViewModel { get; set; }
 
@@ -422,6 +423,7 @@ namespace CityStations.Models
                                        ?.HeightWithModule ?? 0;
             RowCount = station.InformationTable
                               ?.RowCount ?? 0;
+            IpAddress = station.IpDevice;
             var list = new List<SelectListItem>();
             foreach (var item in moduleTypes)
             {

@@ -59,6 +59,15 @@ namespace CityStations.Controllers
 
         [HttpGet]
         [Authorize]
+        public ActionResult RebootAllStations()
+        {
+            var devManager = new DeviceManager("pi","$olnechniKrug2019");
+            devManager.RebootStations();
+            return RedirectToAction("IndexAuthtorize");
+        }
+
+        [HttpGet]
+        [Authorize]
         public ActionResult IndexAuthtorize()
         {
             Logger.WriteLog($"Пользователь {User?.Identity?.GetUserName() ?? "Не определеный пользователь"} зашел в систему!", User?.Identity?.GetUserId()??"HomeController");
@@ -131,11 +140,12 @@ namespace CityStations.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public PartialViewResult SaveChangeOptions(string stationId, string informationTableId, int widthWithModules = 0, int heightWithModules = 0,
-                                                   int rowCount = 0, int timeOutPredictShow = 0)
+                                                   int rowCount = 0, int timeOutPredictShow = 0, string ip="")
         {
             try
             {
                 var contextManager = new ContextManager();
+                contextManager.SetIpAddressDevice(stationId,ip);
                 contextManager.ChangeInformationTable(informationTableId, new InformationTable()
                 {
                     HeightWithModule = heightWithModules,
@@ -439,12 +449,12 @@ namespace CityStations.Controllers
             }
         }
 
-        public PartialViewResult SetConfiguration(string stationId, string ip)
+        public ActionResult SetConfiguration(string stationId, string ip)
         {
             var deviceManager = new DeviceManager("pi", "$olnechniKrug2019");
             if (string.IsNullOrEmpty(ip)) return PartialView("SelectStation", Station);
             deviceManager.ConfigurateDevice(ip, stationId);
-            return PartialView("SelectStation",Station);
+            return View("SelectStation",Station);
         }
 
         public FileResult CreateConfigFile(string stationId)

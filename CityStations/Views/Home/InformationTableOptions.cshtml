@@ -62,9 +62,8 @@
                         <p>Ip адрес устройства:</p>
                     </div>
                     <div class="col-4 ">
-                        <input class="inputElements" name="ip" type="number" value="@(Model != null
-                                                                                              ? Model.Ip
-                                                                                                  .ToString()
+                        <input class="inputElements" name="ip" type="text" value="@(Model != null
+                                                                                              ? Model.IpAddress ?? ""
                                                                                               : "")" />
                     </div>
                 </div>
@@ -110,7 +109,7 @@
                 }
                 <div class="row" style="margin-top: 10px;">
                     <div class="col-12 selectStation">
-                        <a class="btn btn-link buttonSaved" href="@Url.Action("CreateConfigFile","Home",new {stationId=Model?.StationId})" style="width: 155px;"><i class="mdi mdi-download"></i></a>
+                        <a class="btn btn-link buttonSaved" href="@Url.Action("SetConfiguration","Home",new {stationId=Model?.StationId,ip=Model?.IpAddress})" style="width: 155px;"><i class="mdi mdi-download"></i></a>
                     </div>
                 </div>
             </section>
