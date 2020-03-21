@@ -454,6 +454,9 @@ namespace CityStations.Controllers
             var deviceManager = new DeviceManager("pi", "$olnechniKrug2019");
             if (string.IsNullOrEmpty(ip)) return PartialView("SelectStation", Station);
             deviceManager.ConfigurateDevice(ip, stationId);
+            _manager = new ContextManager();
+            var station = _manager.GetStation(stationId);
+            Station = new StationViewModel(station,_moduleTypes,_contentTypes,_selectedModuleTypeId);
             return View("SelectStation",Station);
         }
 

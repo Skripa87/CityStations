@@ -34,7 +34,15 @@ namespace CityStations
                                 "RebootDevices");
                         }
                         var command = sshClient.CreateCommand("sudo reboot now\n", Encoding.UTF8);
-                        command.Execute();
+                        try
+                        {
+                            command.Execute();
+                        }
+                        catch (SshConnectionException ex)
+                        {
+                            Logger.WriteLog($"Выполнена перезагрузка устройства {station.IpDevice}", "ConfigurateDevice");
+                            return;
+                        }
                     }
                 }
             }
@@ -82,6 +90,18 @@ namespace CityStations
                     text.Add("Comment=Checks internet connectivity");
                     text.Add($"Exec=/usr/bin/chromium-browser -incognito --noerrdialogs --kiosk http://92.50.187.210/test/Home/DisplayInformationTable?stationId={stationId}&accessCode={manager.SetAccessCode(stationId)}");
                     sftp.AppendAllLines(".config/autostart/chromium.desktop",text);
+                }
+                if (!ssh.IsConnected) 
+                     ssh.Connect();
+                command = ssh.CreateCommand("sudo reboot now\n", Encoding.UTF8);
+                try
+                {
+                    command.Execute();
+                }
+                catch (SshConnectionException ex)
+                {
+                    Logger.WriteLog($"Выполнена перезагрузка устройства {ipAddressDevice}", "ConfigurateDevice");
+                    return;
                 }
             }
 
