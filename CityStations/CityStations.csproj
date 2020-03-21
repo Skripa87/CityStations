@@ -280,37 +280,7 @@
     <Content Include="Content\bootstrap-reboot.min.css" />
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
-    <Content Include="Content\Images\auth\lockscreen-bg.jpg" />
-    <Content Include="Content\Images\auth\login-bg.jpg" />
-    <Content Include="Content\Images\auth\register-bg.jpg" />
     <Content Include="Content\Images\bus.png" />
-    <Content Include="Content\Images\faces\face1.jpg" />
-    <Content Include="Content\Images\faces\face10.jpg" />
-    <Content Include="Content\Images\faces\face11.jpg" />
-    <Content Include="Content\Images\faces\face12.jpg" />
-    <Content Include="Content\Images\faces\face13.jpg" />
-    <Content Include="Content\Images\faces\face14.jpg" />
-    <Content Include="Content\Images\faces\face15.jpg" />
-    <Content Include="Content\Images\faces\face16.jpg" />
-    <Content Include="Content\Images\faces\face17.jpg" />
-    <Content Include="Content\Images\faces\face18.jpg" />
-    <Content Include="Content\Images\faces\face19.jpg" />
-    <Content Include="Content\Images\faces\face2.jpg" />
-    <Content Include="Content\Images\faces\face20.jpg" />
-    <Content Include="Content\Images\faces\face21.jpg" />
-    <Content Include="Content\Images\faces\face22.jpg" />
-    <Content Include="Content\Images\faces\face23.jpg" />
-    <Content Include="Content\Images\faces\face24.jpg" />
-    <Content Include="Content\Images\faces\face25.jpg" />
-    <Content Include="Content\Images\faces\face26.jpg" />
-    <Content Include="Content\Images\faces\face27.jpg" />
-    <Content Include="Content\Images\faces\face3.jpg" />
-    <Content Include="Content\Images\faces\face4.jpg" />
-    <Content Include="Content\Images\faces\face5.jpg" />
-    <Content Include="Content\Images\faces\face6.jpg" />
-    <Content Include="Content\Images\faces\face7.jpg" />
-    <Content Include="Content\Images\faces\face8.jpg" />
-    <Content Include="Content\Images\faces\face9.jpg" />
     <Content Include="Content\Images\flag.png" />
     <Content Include="Content\Images\icons\icon-128x128.png" />
     <Content Include="Content\Images\icons\icon-144x144.png" />
@@ -683,7 +653,7 @@
           <SaveServerSettingsInUserFile>True</SaveServerSettingsInUserFile>
         </WebProjectProperties>
       </FlavorProperties>
-      <UserProperties content_4bootstrap_1min_1css_1map__JsonSchema="" libman_1json__JsonSchema="" />
+      <UserProperties libman_1json__JsonSchema="" content_4bootstrap_1min_1css_1map__JsonSchema="" />
     </VisualStudio>
   </ProjectExtensions>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
