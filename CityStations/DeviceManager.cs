@@ -9,19 +9,19 @@ namespace CityStations
 {
     public class DeviceManager
     {
-        private readonly string _userName;
-        private readonly string _password;
+        public string UserName { get; set; }
+        public string Password { get; set; }
 
         public void RebootStations()
         {
             var manager = new ContextManager();
             var stations = manager.GetActivStation();
-            if (_password != null && _userName != null && stations != null)
+            if (Password != null && UserName != null && stations != null)
             {
                 foreach (var station in stations)
                 {
                     if (string.IsNullOrEmpty(station.IpDevice)) continue;
-                    using (var sshClient = new SshClient(station.IpDevice, _userName, _password))
+                    using (var sshClient = new SshClient(station.IpDevice, UserName, Password))
                     {
                         try
                         {
@@ -50,7 +50,7 @@ namespace CityStations
 
         public void ConfigurateDevice(string ipAddressDevice, string stationId)
         {
-            using (var ssh = new SshClient(ipAddressDevice, _userName, _password))
+            using (var ssh = new SshClient(ipAddressDevice, UserName, Password))
             {
                 try
                 {
@@ -69,9 +69,7 @@ namespace CityStations
                     command = ssh.CreateCommand("rm -f .config/autostart/chromium.desktop\n");
                     command.Execute();
                 }
-                command = ssh.CreateCommand("nano .config/autostart/chromium.desktop\n");
-                command.Execute();
-                using (var sftp = new SftpClient(ipAddressDevice, _userName, _password))
+                using (var sftp = new SftpClient(ipAddressDevice, UserName, Password))
                 {
                     try
                     {
@@ -89,7 +87,44 @@ namespace CityStations
                     text.Add("Name=Connect");
                     text.Add("Comment=Checks internet connectivity");
                     text.Add($"Exec=/usr/bin/chromium-browser -incognito --noerrdialogs --kiosk http://92.50.187.210/test/Home/DisplayInformationTable?stationId={stationId}&accessCode={manager.SetAccessCode(stationId)}");
-                    sftp.AppendAllLines(".config/autostart/chromium.desktop",text);
+                    try
+                    {
+                        sftp.AppendAllLines(".config/autostart/chromium.desktop", text);
+                    }
+                    catch (SftpPermissionDeniedException ex)
+                    {
+                        Logger.WriteLog($"Произошла ошибка при попытки создания файлов {ex.Message}, подробности {ex.StackTrace}", "ConfigurateDevice");
+                        if (!ssh.IsConnected) ssh.Connect();
+                        command = ssh.CreateCommand("sudo rm -f -r .config/autostart\n");
+                        try
+                        {
+                            command.Execute();
+                        }
+                        catch (SshException sshex)
+                        {
+                            Logger.WriteLog($"Произошла ошибка при попытки удаления папки {ex.Message}, подробности {ex.StackTrace}", "ConfigurateDevice");
+                            return;
+                        }
+                        command = ssh.CreateCommand("mkdir .config/autostart\n");
+                        try
+                        {
+                            command.Execute();
+                        }
+                        catch (SshException sshexep)
+                        {
+                            Logger.WriteLog($"Произошла ошибка при попытки создания папки {ex.Message}, подробности {ex.StackTrace}", "ConfigurateDevice");
+                            return;
+                        }
+                        try
+                        {
+                            sftp.AppendAllLines(".config/autostart/chromium.desktop", text);
+                        }
+                        catch(SftpPermissionDeniedException sftpError)
+                        {
+                            Logger.WriteLog($"Произошла ошибка при попытки добавления данных в файл {ex.Message}, подробности {ex.StackTrace}", "ConfigurateDevice");
+                            return;
+                        }
+                    }
                 }
                 if (!ssh.IsConnected) 
                      ssh.Connect();
@@ -107,10 +142,11 @@ namespace CityStations
 
         }
 
-        public DeviceManager(string userName, string password)
+        public void SetAuthenticationInfo(string password, string userName)
         {
-            _userName = userName;
-            _password = password;
+            Password = password;
+            UserName = userName;
         }
+        
     }
 }

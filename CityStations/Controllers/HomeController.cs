@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
+using Renci.SshNet.Common;
 
 //using System.Speech.Synthesis;
 
@@ -61,7 +62,7 @@ namespace CityStations.Controllers
         [Authorize]
         public ActionResult RebootAllStations()
         {
-            var devManager = new DeviceManager("pi","$olnechniKrug2019");
+            var devManager = new DeviceManager();
             devManager.RebootStations();
             return RedirectToAction("IndexAuthtorize");
         }
@@ -377,7 +378,9 @@ namespace CityStations.Controllers
             {
                 _manager = new ContextManager();
                 var informationTable = _manager.GetInformationTable(informationTableId);
-                var rowCount = informationTable.RowCount;
+                var station = _manager.GetStation(stationId);
+                var stationName = station?.Name ?? "";
+                var rowCount = informationTable?.RowCount ?? 0;
 
                 var informationTableViewModel = new InformationTableViewModel(informationTable, stationId, rowCount);
                 var contents = informationTableViewModel.Contents;
@@ -404,13 +407,13 @@ namespace CityStations.Controllers
                 ViewData["WidthTablo"] = informationTableViewModel.Width;
                 ViewData["HeightTablo"] = informationTableViewModel.Height;
                 Logger.WriteLog(
-                    $"Выполнен запрос на изменение текущего контента остановкой {stationId} - {Station.Name}",
+                    $"Выполнен запрос на изменение текущего контента остановкой {stationId} - {stationName}",
                     stationId);
                 return PartialView(modelContent);
             }
             catch (Exception ex)
             {
-                Logger.WriteLog($"Ошибка отображения содержимого у остаеновки {stationId} - {Station}", stationId);
+                Logger.WriteLog($"Ошибка отображения содержимого у остановки {stationId}", stationId);
                 ViewData["StationId"] = stationId;
                 return PartialView("Error");
             }
@@ -451,12 +454,37 @@ namespace CityStations.Controllers
 
         public ActionResult SetConfiguration(string stationId, string ip)
         {
-            var deviceManager = new DeviceManager("pi", "$olnechniKrug2019");
+            var deviceManager = new DeviceManager();
             if (string.IsNullOrEmpty(ip)) return PartialView("SelectStation", Station);
-            deviceManager.ConfigurateDevice(ip, stationId);
+            deviceManager.SetAuthenticationInfo("$olnechniKrug2019","pi");
+            try
+            {
+                deviceManager.ConfigurateDevice(ip, stationId);
+            }
+            catch (SshAuthenticationException ex)
+            {
+                deviceManager.SetAuthenticationInfo("$olnechniKrug", "pi");
+                deviceManager.ConfigurateDevice(ip,stationId);
+            }
             _manager = new ContextManager();
             var station = _manager.GetStation(stationId);
             Station = new StationViewModel(station,_moduleTypes,_contentTypes,_selectedModuleTypeId);
+            OptionsAndPreviewViewModel = Station?.OptionsAndPreviewModel;
+            InformationTableViewModel = OptionsAndPreviewViewModel?.InformationTablePreview;
+            OptionsViewModel = OptionsAndPreviewViewModel?.Options;
+            ViewData["timeOutNextContent"] =
+                GetTimeOutNextContent(Station, ContainerClassType.STATION, out _, out _);
+            ViewData["stationId"] = Station?.StationId;
+            ViewData["InformationTable"] = Station?.OptionsAndPreviewModel?.InformationTablePreview;
+            ViewData["informationTableId"] =
+                Station?.OptionsAndPreviewModel?.InformationTablePreview?.InformationTableId ?? "-1";
+            ViewData["CssClass"] = Station?.OptionsAndPreviewModel?.InformationTablePreview?.CssClass;
+            ViewData["CentralPosition"] =
+                (((Station?.OptionsAndPreviewModel?.InformationTablePreview?.Height ?? 0) / 2) - 10) + "px";
+            ViewData["WidthTablo"] = InformationTableViewModel?.Width ?? 0;
+            ViewData["HeightTablo"] = InformationTableViewModel?.Height ?? 0;
+            Logger.WriteLog($"Поступил запрос от остановки с идентификатором {stationId} - {Station?.Name}",
+                stationId);
             return View("SelectStation",Station);
         }
 

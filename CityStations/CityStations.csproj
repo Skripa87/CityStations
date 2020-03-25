@@ -653,7 +653,7 @@
           <SaveServerSettingsInUserFile>True</SaveServerSettingsInUserFile>
         </WebProjectProperties>
       </FlavorProperties>
-      <UserProperties libman_1json__JsonSchema="" content_4bootstrap_1min_1css_1map__JsonSchema="" />
+      <UserProperties content_4bootstrap_1min_1css_1map__JsonSchema="" libman_1json__JsonSchema="" />
     </VisualStudio>
   </ProjectExtensions>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

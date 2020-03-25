@@ -151,7 +151,6 @@ namespace CityStations.Models
             PrecipationIcon = DateTime.Now
                                       .TimeOfDay
                                       .ToString();
-            
             var buffPrecipitation = weatherCity.weather
                                                     .FirstOrDefault()
                                                     ?.description ?? "";
