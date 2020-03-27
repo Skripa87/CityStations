@@ -141,10 +141,19 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="documentation/documentation.html">
-                                <i class="mdi mdi-file-document-box-outline menu-icon"></i>
-                                <span class="menu-title">Документация</span>
-                            </a>
+                            @using (Ajax.BeginForm("Monitoring", "Home",new {mode = "normal"}, new AjaxOptions()
+                                {
+                                    HttpMethod = "POST",
+                                    UpdateTargetId = "wrapper",
+                                    InsertionMode = InsertionMode.Replace,
+                                }, new { }))
+                            {
+                                @Html.AntiForgeryToken();
+                                <button class="btn btn-link nav-link" type="submit">
+                                    <i class="mdi mdi-home menu-icon"></i>
+                                    <span class="menu-title">Мониторинг</span>
+                                </button>
+                            }
                         </li>
                     </ul>
                 </nav>

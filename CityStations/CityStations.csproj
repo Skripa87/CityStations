@@ -257,6 +257,7 @@
     <Compile Include="Models\Main.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
     <Compile Include="Models\ModuleType.cs" />
+    <Compile Include="Models\MonitoringViewModel.cs" />
     <Compile Include="Models\Predict.cs" />
     <Compile Include="Models\PredictManager.cs" />
     <Compile Include="Models\Rain.cs" />
@@ -599,6 +600,7 @@
     <Content Include="Scripts\popper.js.map" />
     <Content Include="Scripts\popper-utils.min.js.map" />
     <Content Include="Scripts\popper-utils.js.map" />
+    <Content Include="Views\Home\Monitoring.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

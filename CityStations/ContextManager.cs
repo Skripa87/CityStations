@@ -145,7 +145,7 @@ namespace CityStations
                            .ConfigureAwait(false);
         }
 
-        public List<StationModel> GetActivStation()
+        public List<StationModel> GetActivStations()
         {
             return db.Stations
                      .Where(s => s.Active)
@@ -617,6 +617,60 @@ namespace CityStations
                 }
             }
             return station;
+        }
+
+        public void RemoveOldEvents()
+        {
+            var oldEvents = db.Events
+                              .Where(e => e.Date < DateTime.Today);
+            db.Events.RemoveRange(oldEvents);
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (System.Data.Entity.Validation.DbEntityValidationException dbEx)
+            {
+                Exception raise = dbEx;
+                foreach (var validationErrors in dbEx.EntityValidationErrors)
+                {
+                    foreach (var validationError in validationErrors.ValidationErrors)
+                    {
+                        string message = $"{validationErrors.Entry.Entity}:{validationError.ErrorMessage}";
+                        raise = new InvalidOperationException(message, raise);
+                    }
+                }
+            }
+        }
+
+        public List<Event> GetActulEventsByFiveMinuts()
+        {
+            //var allEvents = GetEvents();
+            //if (allEvents == null) return new List<Event>();
+            var currentDateTime = DateTime.Now;
+            var currentDateTimeBeforeFiveMinuts = currentDateTime.Subtract(TimeSpan.FromMinutes(5.0));
+            var actualEvents =
+                db.Events
+                  .Where(e => e.Date > currentDateTimeBeforeFiveMinuts && e.Date < currentDateTime);
+            return actualEvents.ToList();
+        }
+        public List<Event> GetErrorEvents()
+        {
+            return db.Events
+                .Where(e => e.EventType == EventType.ERROR)
+                .ToList();
+        }
+
+        public List<Event> GetActulEventsByFiveMinutsForStation(string stationId)
+        {
+            //var allEvents = GetEvents();
+            //if (allEvents == null || string.IsNullOrEmpty(stationId)) return new List<Event>();
+            var currentDateTime = DateTime.Now;
+            var currentDateTimeBeforeFiveMinuts = currentDateTime.Subtract(TimeSpan.FromMinutes(5.0));
+            var actualEvents =
+                db.Events
+                  .Where(e => e.Date > currentDateTimeBeforeFiveMinuts && e.Date < currentDateTime)
+                  .ToList();
+            return actualEvents.FindAll(e=>string.Equals(e.Initiator,stationId,new StringComparison())) ?? new List<Event>();
         }
     }
 }

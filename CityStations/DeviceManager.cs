@@ -15,7 +15,7 @@ namespace CityStations
         public void RebootStations()
         {
             var manager = new ContextManager();
-            var stations = manager.GetActivStation();
+            var stations = manager.GetActivStations();
             if (Password != null && UserName != null && stations != null)
             {
                 foreach (var station in stations)

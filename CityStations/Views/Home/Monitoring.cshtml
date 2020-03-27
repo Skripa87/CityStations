@@ -1,0 +1,90 @@
+﻿@using CityStations.Models
+@model IEnumerable<CityStations.Models.MonitoringViewModel>
+<div class="card">
+    <div class="card-header">
+        <h4 class="card-title">Информационные табло прибытия</h4>
+    </div>
+    <div class="card-body">
+        <div id="tableContainer" class="table-responsive tableContainer">
+            <table border="0" cellpadding="0" cellspacing="0" width="100%" class="table table-bordered table-hover serch-stations scrollTable">
+                <thead class="fixedHeader">
+                    <tr>
+                        <th width="5%">#</th>
+                        <th width="20%">Наименование</th>
+                        <th width="20%">Источник прогнозов</th>
+                        <th width="20%">Последняя активность остановки</th>
+                        <th width="20%">Анализ функиональности</th>
+                        <th width="15%">Последняя ошибка</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBodyId" class="scrollContent">
+                    @{
+                        var i = 1;
+                        var normalWork = 0;
+                        var problemWork = 0;
+                        var notWork = 0;
+                        foreach (var station in Model)
+                        {
+                            <tr class="variant @{ $"functionality_{station.AnaliticFunctionality.ToString()}"}" onclick="selectSearchResult('@station.StationId', '@station.StationNameAndDescription')">
+                                <th width="5%">#@i</th>
+                                <th width="20%">@station.StationNameAndDescription</th>
+                                <th width="20%">@station.ForecastSource</th>
+                                <th width="20%">@station.LastStationActivity</th>
+                                <th width="20%">@station.AnaliticFunctionalityString</th>
+                                <th width="15%">@station.LastError</th>
+                            </tr>
+                            switch (station.AnaliticFunctionality)
+                            {
+                                case AnaliticFunctionality.NORMAL_WORK:
+                                    {
+                                        normalWork++;
+                                    }
+                                    break;
+                                case AnaliticFunctionality.BAD_WORK:
+                                    {
+                                        problemWork++;
+                                    }
+                                    break;
+                                case AnaliticFunctionality.NOT_WORK:
+                                    {
+                                        notWork++;
+                                    }
+                                    break;
+                            }
+                            i++;
+                        }
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th width="100%">На дату @DateTime.Now.ToString("yyyy-MM-dd") общее число активированных информационных табло: - @i</th>
+                    </tr>
+                    <tr>
+                        <th width="20%"></th>
+                        <th width="80%">Функционируют @normalWork информационных табло</th>
+                    </tr>
+                    <tr>
+                        <th width="20%"></th>
+                        <th width="80%">Проблемы с функционированием замечены у @problemWork информационных табло</th>
+                    </tr>
+                    <tr>
+                        <th width="20%"></th>
+                        <th width="80%">Не работает @notWork информационных табло</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+    @using (Ajax.BeginForm("SelectStation", "Home", new { }, new AjaxOptions()
+    {
+        HttpMethod = "POST",
+        UpdateTargetId = "wrapper",
+        InsertionMode = InsertionMode.Replace,
+        OnSuccess = "reloadAllContentTriggerGo"
+    }))
+    {
+        @Html.AntiForgeryToken()
+        <button id="selectStationButton" type="submit" hidden style="display: none;"></button>
+        <input id="selectStationId" name="stationId" type="text" value="" hidden />
+    }
+</div>

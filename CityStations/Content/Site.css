@@ -17,6 +17,17 @@
     font-weight: 600;
     color: white;
 }
+.functionality_BAD_WORK {
+    background-color: coral;
+}
+
+.functionality_NOT_WORK {
+    background-color: crimson;
+}
+
+.functionality_NORMAL_WORK {
+    background-color: chartreuse;
+}
 
 div.tableContainer {
     clear: both;

@@ -488,6 +488,36 @@ namespace CityStations.Controllers
             return View("SelectStation",Station);
         }
 
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public ActionResult Monitoring(string mode)
+        {
+            List<StationModel> stations = null;
+            List<MonitoringViewModel> model = new List<MonitoringViewModel>();
+            try
+            {
+                _manager = new ContextManager();
+                stations = _manager.GetActivStations();
+                _manager.RemoveOldEvents();
+                var eventsByFiveMinuts = _manager.GetActulEventsByFiveMinuts();
+                var errorEvents = _manager.GetErrorEvents();
+                foreach (var station in stations)
+                {
+                    
+                    var monitoring = new MonitoringViewModel(station,eventsByStation);
+                    model.Add(monitoring);
+                }
+                return PartialView(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteLog($"", "Monitoring");
+                return RedirectToAction("Error");
+            }
+        }
+
+
         public FileResult CreateConfigFile(string stationId)
         {
             byte[] buffer = new byte[1024];

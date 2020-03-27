@@ -20,11 +20,11 @@ namespace CityStations.Models
         {
             Id = Guid.NewGuid()
                      .ToString();
-            EventType = message.ToLowerInvariant()
-                               .Contains("ошибка")
+            EventType = message.ToUpperInvariant()
+                               .Contains("ОШИБКА")
                       ? EventType.ERROR
-                      : (message.ToLowerInvariant()
-                                .Contains("внимание")  
+                      : (message.ToUpperInvariant()
+                                .Contains("ВНИМАНИЕ")  
                          ? EventType.WARNING
                          : EventType.EVENT);
             Date = DateTime.Now;
