@@ -504,8 +504,10 @@ namespace CityStations.Controllers
                 var errorEvents = _manager.GetErrorEvents();
                 foreach (var station in stations)
                 {
-                    
-                    var monitoring = new MonitoringViewModel(station,eventsByStation);
+                    var events = eventsByFiveMinuts.FindAll(e => string.Equals(e.Initiator, station?.Id,new StringComparison()));
+                    var eventsE =
+                        errorEvents.FindAll(e => string.Equals(e.Initiator, station.Id, new StringComparison()));
+                    var monitoring = new MonitoringViewModel(station,events,eventsE);
                     model.Add(monitoring);
                 }
                 return PartialView(model);
