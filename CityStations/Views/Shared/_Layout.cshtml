@@ -141,14 +141,10 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            @using (Ajax.BeginForm("Monitoring", "Home",new {mode = "normal"}, new AjaxOptions()
-                                {
-                                    HttpMethod = "POST",
-                                    UpdateTargetId = "wrapper",
-                                    InsertionMode = InsertionMode.Replace,
-                                }, new { }))
+                            @using (@Html.BeginForm("Monitoring", "Home", FormMethod.Post))
                             {
-                                @Html.AntiForgeryToken();
+                                //@Html.AntiForgeryToken();
+                                <input name="mode" value="normal" hidden />
                                 <button class="btn btn-link nav-link" type="submit">
                                     <i class="mdi mdi-home menu-icon"></i>
                                     <span class="menu-title">Мониторинг</span>

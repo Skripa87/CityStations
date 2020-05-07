@@ -490,7 +490,7 @@ namespace CityStations.Controllers
 
         [HttpPost]
         [Authorize]
-        [ValidateAntiForgeryToken]
+        //[ValidateAntiForgeryToken]
         public ActionResult Monitoring(string mode)
         {
             List<StationModel> stations = null;
@@ -510,7 +510,7 @@ namespace CityStations.Controllers
                     var monitoring = new MonitoringViewModel(station,events,eventsE);
                     model.Add(monitoring);
                 }
-                return PartialView(model);
+                return View(model);
             }
             catch (Exception ex)
             {

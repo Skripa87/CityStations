@@ -48,10 +48,11 @@ namespace CityStations.Models
                                         ?.Date ?? DateTime.MinValue;
                 LastStationActivity = lastEventDateTime.ToString($"yyyy/MM/dd HH:mm:ss", new CultureInfo("All"));
             }
-            else if (DateTime.Now - lastEventDateTime > TimeSpan.FromSeconds(60.0))
+            else if (DateTime.Now - lastEventDateTime < TimeSpan.FromSeconds(60.0))
             {
                 AnaliticFunctionalityString = "Табло работает нормально!";
                 AnaliticFunctionality = AnaliticFunctionality.NORMAL_WORK;
+                LastStationActivity = lastEventDateTime.ToString($"yyyy/MM/dd HH:mm:ss", new CultureInfo("All"));
             }
             LastError = errorEvents == null
                       ? "Табло не работает!"

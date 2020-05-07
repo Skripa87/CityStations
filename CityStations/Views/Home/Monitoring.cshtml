@@ -25,7 +25,7 @@
                         var notWork = 0;
                         foreach (var station in Model)
                         {
-                            <tr class="variant @{ $"functionality_{station.AnaliticFunctionality.ToString()}"}" onclick="selectSearchResult('@station.StationId', '@station.StationNameAndDescription')">
+                            <tr class="variant functionality_@station.AnaliticFunctionality.ToString()" onclick="selectSearchResult('@station.StationId', '@station.StationNameAndDescription')">
                                 <th width="5%">#@i</th>
                                 <th width="20%">@station.StationNameAndDescription</th>
                                 <th width="20%">@station.ForecastSource</th>
@@ -58,18 +58,19 @@
                 <tfoot>
                     <tr>
                         <th width="100%">На дату @DateTime.Now.ToString("yyyy-MM-dd") общее число активированных информационных табло: - @i</th>
+                        <th width="0%"></th>
                     </tr>
                     <tr>
-                        <th width="20%"></th>
                         <th width="80%">Функционируют @normalWork информационных табло</th>
+                        <th width="20%"></th>
                     </tr>
                     <tr>
-                        <th width="20%"></th>
                         <th width="80%">Проблемы с функционированием замечены у @problemWork информационных табло</th>
+                        <th width="20%"></th>
                     </tr>
                     <tr>
-                        <th width="20%"></th>
                         <th width="80%">Не работает @notWork информационных табло</th>
+                        <th width="20%"></th>
                     </tr>
                 </tfoot>
             </table>
