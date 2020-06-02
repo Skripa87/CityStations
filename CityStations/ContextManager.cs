@@ -622,23 +622,42 @@ namespace CityStations
         public void RemoveOldEvents()
         {
             var oldEvents = db.Events
-                              .Where(e => e.Date < DateTime.Today);
-            db.Events.RemoveRange(oldEvents);
-            try
+                              .Where(e => e.Date < DateTime.Today && e.EventType != EventType.ERROR)
+                              .ToList();
+            var partOldEvents = new List<Event>();
+            bool marker = false;
+            while (true)
             {
-                db.SaveChanges();
-            }
-            catch (System.Data.Entity.Validation.DbEntityValidationException dbEx)
-            {
-                Exception raise = dbEx;
-                foreach (var validationErrors in dbEx.EntityValidationErrors)
+                try
                 {
-                    foreach (var validationError in validationErrors.ValidationErrors)
+                    partOldEvents = oldEvents.GetRange(0, 100000);
+                    oldEvents.RemoveRange(0,100000);
+                }
+                catch (Exception exception)
+                {
+                    var count = oldEvents.Count - 1;
+                    partOldEvents = oldEvents.GetRange(0, count);
+                    oldEvents.RemoveRange(0,count);
+                    marker = true;
+                }
+                db.Events.RemoveRange(partOldEvents);
+                try
+                {
+                    db.SaveChanges();
+                }
+                catch (System.Data.Entity.Validation.DbEntityValidationException dbEx)
+                {
+                    Exception raise = dbEx;
+                    foreach (var validationErrors in dbEx.EntityValidationErrors)
                     {
-                        string message = $"{validationErrors.Entry.Entity}:{validationError.ErrorMessage}";
-                        raise = new InvalidOperationException(message, raise);
+                        foreach (var validationError in validationErrors.ValidationErrors)
+                        {
+                            string message = $"{validationErrors.Entry.Entity}:{validationError.ErrorMessage}";
+                            raise = new InvalidOperationException(message, raise);
+                        }
                     }
                 }
+                if (marker) break;
             }
         }
 

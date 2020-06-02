@@ -37,18 +37,18 @@
                         </h3>
                     </div>
                 </div>
-                using (Html.BeginForm("ActivateInformationTable", "Home", new {stationId = Model.StationId}, FormMethod.Post, new {@class = "informationTable"}))
+                using (Html.BeginForm("ActivateInformationTable", "Home", new { stationId = Model.StationId }, FormMethod.Post, new { @class = "informationTable" }))
                 {
                     @Html.AntiForgeryToken()
-    <button class="btn btn-link" id="activateInformationTableButtonId" type="submit">Активировать информационное табло</button>
+                    <button class="btn btn-link" id="activateInformationTableButtonId" type="submit">Активировать информационное табло</button>
                     @*<div class="row">
-                        <div id="informationTable" class="col-12 selectStation">
-                            <label>
-                                Активировать информационное табло
-                                <input type="checkbox" name="isActive" class="checkBoxActiveInformationTable" onclick="formActivateInformationTableSubmit()" />
-                            </label>
-                        </div>
-                    </div>*@
+                            <div id="informationTable" class="col-12 selectStation">
+                                <label>
+                                    Активировать информационное табло
+                                    <input type="checkbox" name="isActive" class="checkBoxActiveInformationTable" onclick="formActivateInformationTableSubmit()" />
+                                </label>
+                            </div>
+                        </div>*@
                 }
             }
         }
@@ -61,4 +61,4 @@
             </div>
         }
     </div>
-    </div>
+</div>

@@ -1,4 +1,6 @@
 ﻿using CityStations.Models;
+using Microsoft.AspNet.Identity;
+using Renci.SshNet.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,8 +10,6 @@ using System.Speech.Synthesis;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
-using Microsoft.AspNet.Identity;
-using Renci.SshNet.Common;
 
 //using System.Speech.Synthesis;
 
@@ -43,7 +43,6 @@ namespace CityStations.Controllers
         private static List<ModuleType> _moduleTypes;
 
         private static List<ContentType> _contentTypes;
-
         private static StationViewModel Station { get; set; }
         private static OptionsAndPreviewViewModel OptionsAndPreviewViewModel { get; set; }
         private static OptionsViewModel OptionsViewModel { get; set; }
@@ -71,7 +70,7 @@ namespace CityStations.Controllers
         [Authorize]
         public ActionResult IndexAuthtorize()
         {
-            Logger.WriteLog($"Пользователь {User?.Identity?.GetUserName() ?? "Не определеный пользователь"} зашел в систему!", User?.Identity?.GetUserId()??"HomeController");
+            Logger.WriteLog($"Пользователь {User?.Identity?.GetUserName() ?? "Не определеный пользователь"} зашел в систему!", User?.Identity?.GetUserId() ?? "HomeController");
             ViewData["MyAcc"] = User?.Identity
                                     ?.Name == "skripinalexey1987@gmail.com";
             return View();
@@ -101,7 +100,6 @@ namespace CityStations.Controllers
                 {
                     return PartialView();
                 }
-
                 ContentAddViewModel = new ContentAddViewModel(station.Id, new Content()
                 {
                     ContentType = ContentType.TEXT,
@@ -131,7 +129,7 @@ namespace CityStations.Controllers
             {
                 Logger.WriteLog(
                     $"Пользователь {User.Identity.GetUserId()} - при попытке доступа к настройкам остановочного павильона с идентификатором {stationId} - {Station?.Name} инициировал ошибку {ex.Message}, подробности {ex.StackTrace}",
-                    User?.Identity?.GetUserId()??"HomeController");
+                    User?.Identity?.GetUserId() ?? "HomeController");
                 ViewData["StationId"] = stationId;
                 return PartialView("Error");
             }
@@ -141,12 +139,12 @@ namespace CityStations.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public PartialViewResult SaveChangeOptions(string stationId, string informationTableId, int widthWithModules = 0, int heightWithModules = 0,
-                                                   int rowCount = 0, int timeOutPredictShow = 0, string ip="")
+                                                   int rowCount = 0, int timeOutPredictShow = 0, string ip = "")
         {
             try
             {
                 var contextManager = new ContextManager();
-                contextManager.SetIpAddressDevice(stationId,ip);
+                contextManager.SetIpAddressDevice(stationId, ip);
                 contextManager.ChangeInformationTable(informationTableId, new InformationTable()
                 {
                     HeightWithModule = heightWithModules,
@@ -168,8 +166,8 @@ namespace CityStations.Controllers
                 ViewData["stationId"] = station?.Id;
                 ViewData["informationTableId"] = station?.InformationTable?.Id;
                 Logger.WriteLog(
-                    $"Пользователь {User.Identity.GetUserId()} выполнил сохранение данных настроек остановочного павильона с идентификатором {stationId} - {Station?.Name}",
-                    Station.StationId);
+                    $"Пользователь {User.Identity.GetUserId()} выполнил сохранение данных настроек остановочного павильона с идентификатором {stationId} - {station?.Name}",
+                    station?.Id ?? "0");
             }
             catch (Exception ex)
             {
@@ -346,8 +344,8 @@ namespace CityStations.Controllers
                 _manager.ChangeContent(contentId, newContent);
                 var content = _manager.GetContent(contentId);
                 station = _manager.GetStation(stationId);
-                var informationTableId = station?.InformationTable
-                                             ?.Id ?? "-1";
+                //var informationTableId = station?.InformationTable
+                //                             ?.Id ?? "-1";
                 var contentOption = new ContentOption(content, _contentTypes, ((int)content.ContentType).ToString(),
                     stationId);
                 OptionsAndPreviewViewModel =
@@ -381,7 +379,6 @@ namespace CityStations.Controllers
                 var station = _manager.GetStation(stationId);
                 var stationName = station?.Name ?? "";
                 var rowCount = informationTable?.RowCount ?? 0;
-
                 var informationTableViewModel = new InformationTableViewModel(informationTable, stationId, rowCount);
                 var contents = informationTableViewModel.Contents;
                 index++;
@@ -390,7 +387,7 @@ namespace CityStations.Controllers
                     index = 0;
                 }
                 var modelContent = informationTableViewModel.Contents
-                    .ElementAt(index);
+                                                            .ElementAt(index);
                 var indexNext = index + 1;
                 if (contents != null && indexNext >= contents.Count)
                 {
@@ -413,7 +410,7 @@ namespace CityStations.Controllers
             }
             catch (Exception ex)
             {
-                Logger.WriteLog($"Ошибка отображения содержимого у остановки {stationId}", stationId);
+                Logger.WriteLog($"Ошибка отображения содержимого у остановки {stationId}, {ex.Message} подробности {ex.StackTrace}", stationId);
                 ViewData["StationId"] = stationId;
                 return PartialView("Error");
             }
@@ -445,7 +442,7 @@ namespace CityStations.Controllers
             catch (Exception ex)
             {
                 Logger.WriteLog(
-                    $"Не удалось удалить контент из списка активного контента у остановочного павильона с идентификатором {stationId} - {Station.Name}",
+                    $"Не удалось удалить контент из списка активного контента у остановочного павильона с идентификатором {stationId} - {Station.Name}, причина: {ex.Message}, подробности {ex.StackTrace}",
                     User.Identity.GetUserId());
                 ViewData["StationId"] = stationId;
                 return PartialView("Error");
@@ -456,19 +453,20 @@ namespace CityStations.Controllers
         {
             var deviceManager = new DeviceManager();
             if (string.IsNullOrEmpty(ip)) return PartialView("SelectStation", Station);
-            deviceManager.SetAuthenticationInfo("$olnechniKrug2019","pi");
+            deviceManager.SetAuthenticationInfo("$olnechniKrug2019", "pi");
             try
             {
                 deviceManager.ConfigurateDevice(ip, stationId);
             }
             catch (SshAuthenticationException ex)
             {
+                Logger.WriteLog($"{ex.Message}, подробности {ex.StackTrace}", $"SetConfiguration {stationId}");
                 deviceManager.SetAuthenticationInfo("$olnechniKrug", "pi");
-                deviceManager.ConfigurateDevice(ip,stationId);
+                deviceManager.ConfigurateDevice(ip, stationId);
             }
             _manager = new ContextManager();
             var station = _manager.GetStation(stationId);
-            Station = new StationViewModel(station,_moduleTypes,_contentTypes,_selectedModuleTypeId);
+            Station = new StationViewModel(station, _moduleTypes, _contentTypes, _selectedModuleTypeId);
             OptionsAndPreviewViewModel = Station?.OptionsAndPreviewModel;
             InformationTableViewModel = OptionsAndPreviewViewModel?.InformationTablePreview;
             OptionsViewModel = OptionsAndPreviewViewModel?.Options;
@@ -485,7 +483,7 @@ namespace CityStations.Controllers
             ViewData["HeightTablo"] = InformationTableViewModel?.Height ?? 0;
             Logger.WriteLog($"Поступил запрос от остановки с идентификатором {stationId} - {Station?.Name}",
                 stationId);
-            return View("SelectStation",Station);
+            return View("SelectStation", Station);
         }
 
         [HttpPost]
@@ -493,28 +491,27 @@ namespace CityStations.Controllers
         //[ValidateAntiForgeryToken]
         public ActionResult Monitoring(string mode)
         {
-            List<StationModel> stations = null;
             List<MonitoringViewModel> model = new List<MonitoringViewModel>();
             try
             {
                 _manager = new ContextManager();
-                stations = _manager.GetActivStations();
+                var stations = _manager.GetActivStations();
                 _manager.RemoveOldEvents();
                 var eventsByFiveMinuts = _manager.GetActulEventsByFiveMinuts();
                 var errorEvents = _manager.GetErrorEvents();
                 foreach (var station in stations)
                 {
-                    var events = eventsByFiveMinuts.FindAll(e => string.Equals(e.Initiator, station?.Id,new StringComparison()));
+                    var events = eventsByFiveMinuts.FindAll(e => string.Equals(e.Initiator, station?.Id, new StringComparison()));
                     var eventsE =
                         errorEvents.FindAll(e => string.Equals(e.Initiator, station.Id, new StringComparison()));
-                    var monitoring = new MonitoringViewModel(station,events,eventsE);
+                    var monitoring = new MonitoringViewModel(station, events, eventsE);
                     model.Add(monitoring);
                 }
                 return View(model);
             }
             catch (Exception ex)
             {
-                Logger.WriteLog($"", "Monitoring");
+                Logger.WriteLog($"{ex.Message} {ex.StackTrace}", "Monitoring");
                 return RedirectToAction("Error");
             }
         }
@@ -653,7 +650,7 @@ namespace CityStations.Controllers
             }
             catch (Exception ex)
             {
-                Logger.WriteLog("Проблемы с базой", "HomeController");
+                Logger.WriteLog($"Проблемы с базой {ex.Message} {ex.StackTrace}", "HomeController");
             }
             station = station ?? new StationModel
             {
@@ -670,8 +667,8 @@ namespace CityStations.Controllers
                 InformationTable = new InformationTable
                 {
                     Id = "Error",
-                    HeightWithModule = 80,
-                    WidthWithModule = 320,
+                    HeightWithModule = 2,
+                    WidthWithModule = 4,
                     ModuleType = new ModuleType
                     {
                         CssClass = "p4cssClass",
@@ -692,8 +689,8 @@ namespace CityStations.Controllers
                             }
                 }
             };
-            _contentTypes = _contentTypes ?? new List<ContentType>() {ContentType.DATE_TIME};
-            _moduleTypes = _moduleTypes ?? new List<ModuleType>(){ new ModuleType {CssClass = "p4cssClass", Id = "Q4Y10V5H", WidthPx = 80, HeightPx = 40}};
+            _contentTypes = _contentTypes ?? new List<ContentType>() { ContentType.DATE_TIME };
+            _moduleTypes = _moduleTypes ?? new List<ModuleType>() { new ModuleType { CssClass = "p4cssClass", Id = "Q4Y10V5H", WidthPx = 80, HeightPx = 40 } };
             Station = new StationViewModel(station, _moduleTypes, _contentTypes, "Q4Y10V5H");
             OptionsAndPreviewViewModel = Station?.OptionsAndPreviewModel;
             InformationTableViewModel = OptionsAndPreviewViewModel?.InformationTablePreview;
@@ -710,283 +707,283 @@ namespace CityStations.Controllers
             Logger.WriteLog($"Поступил запрос от остановки с идентификатором {stationId} - {Station?.Name}",
                stationId);
             return View("DisplayInformationTable", Station);
-    }
-
-    private int GetTimeOutNextContent(object container, ContainerClassType key, out string cssClass, out string centralPosition)
-{
-    int timeOutNextContent;
-    cssClass = "";
-    centralPosition = "";
-    IContent currentContent = null;
-    int contentsCount = -1;
-    if (key == ContainerClassType.OPTION)
-    {
-        currentContent = ((OptionsAndPreviewViewModel)container)?.InformationTablePreview
-                                                                 ?.CurrentContent;
-        cssClass = ((OptionsAndPreviewViewModel)container)?.InformationTablePreview
-                                                           .CssClass ?? "";
-        centralPosition = ((((OptionsAndPreviewViewModel)container)?.InformationTablePreview
-                            ?.Height ?? 0) / 2 - 10) + "px";
-        contentsCount = ((OptionsAndPreviewViewModel)container)?.InformationTablePreview
-                                                               ?.Contents
-                                                               ?.Count ?? 0;
-    }
-    else if (key == ContainerClassType.STATION)
-    {
-        currentContent = ((StationViewModel)container)?.OptionsAndPreviewModel
-                                                      ?.InformationTablePreview
-                                                      ?.CurrentContent;
-        cssClass = ((StationViewModel)container)?.OptionsAndPreviewModel
-                                                ?.InformationTablePreview
-                                                ?.CssClass ?? "";
-        centralPosition = ((((StationViewModel)container)?.OptionsAndPreviewModel
-                            ?.InformationTablePreview
-                            ?.Height ?? 0) / 2 - 10) + "px";
-        contentsCount = ((StationViewModel)container)?.OptionsAndPreviewModel
-                                                     ?.InformationTablePreview
-                                                     ?.Contents
-                                                     ?.Count ?? 0;
-    }
-    var indexNextContent = (currentContent?.IndexInContent + 1 ?? 0) >= contentsCount
-                         ? 0
-                         : currentContent?.IndexInContent + 1 ?? 0;
-    if (contentsCount > 0)
-    {
-
-        if (key == ContainerClassType.OPTION)
-        {
-            timeOutNextContent = ((OptionsAndPreviewViewModel)container)?.InformationTablePreview
-                                                                        ?.Contents
-                                                                        ?.ElementAt(indexNextContent)
-                                                                        ?.TimeOut ?? 0;
         }
-        else
+
+        private int GetTimeOutNextContent(object container, ContainerClassType key, out string cssClass, out string centralPosition)
         {
-            timeOutNextContent = ((StationViewModel)container)?.OptionsAndPreviewModel
+            int timeOutNextContent;
+            cssClass = "";
+            centralPosition = "";
+            IContent currentContent = null;
+            int contentsCount = -1;
+            if (key == ContainerClassType.OPTION)
+            {
+                currentContent = ((OptionsAndPreviewViewModel)container)?.InformationTablePreview
+                                                                         ?.CurrentContent;
+                cssClass = ((OptionsAndPreviewViewModel)container)?.InformationTablePreview
+                                                                   .CssClass ?? "";
+                centralPosition = ((((OptionsAndPreviewViewModel)container)?.InformationTablePreview
+                                    ?.Height ?? 0) / 2 - 10) + "px";
+                contentsCount = ((OptionsAndPreviewViewModel)container)?.InformationTablePreview
+                                                                       ?.Contents
+                                                                       ?.Count ?? 0;
+            }
+            else if (key == ContainerClassType.STATION)
+            {
+                currentContent = ((StationViewModel)container)?.OptionsAndPreviewModel
                                                               ?.InformationTablePreview
-                                                              ?.Contents
-                                                              ?.ElementAt(indexNextContent)
-                                                              ?.TimeOut ?? 0;
-        }
-    }
-    else
-    {
-        timeOutNextContent = 0;
-    }
-    return timeOutNextContent;
-}
+                                                              ?.CurrentContent;
+                cssClass = ((StationViewModel)container)?.OptionsAndPreviewModel
+                                                        ?.InformationTablePreview
+                                                        ?.CssClass ?? "";
+                centralPosition = ((((StationViewModel)container)?.OptionsAndPreviewModel
+                                    ?.InformationTablePreview
+                                    ?.Height ?? 0) / 2 - 10) + "px";
+                contentsCount = ((StationViewModel)container)?.OptionsAndPreviewModel
+                                                             ?.InformationTablePreview
+                                                             ?.Contents
+                                                             ?.Count ?? 0;
+            }
+            var indexNextContent = (currentContent?.IndexInContent + 1 ?? 0) >= contentsCount
+                                 ? 0
+                                 : currentContent?.IndexInContent + 1 ?? 0;
+            if (contentsCount > 0)
+            {
 
-[HttpGet]
-public static FileStreamResult GetAudioPredictFree(string stationId)
-{
-    var streamAudio = new MemoryStream();
-    var manager = new PredictManager();
-    var predictNotObject = manager.GetStationForecast(stationId).ToList();
-    predictNotObject = predictNotObject.Count() > 4
-                     ? predictNotObject.GetRange(0, 4)
-                     : predictNotObject;
-    var text = "Уважаемые пасажиры!" + '\n';
-    foreach (var item in predictNotObject)
-    {
-        var time = item.Arrt != null
-            ? (((int)item.Arrt / 60) == 0 ? "1" : ((int)item.Arrt / 60).ToString())
-            : "";
-        var resultTime = "";
-        switch (time)
-        {
-            case "1":
-                resultTime = "одну минуту";
-                break;
-            case "2":
-                resultTime = "две минуты";
-                break;
-            case "3":
-                resultTime = "три минуты";
-                break;
-            case "4":
-                resultTime = "четыре минуты";
-                break;
-            case "5":
-                resultTime = "пять минут";
-                break;
-            case "6":
-                resultTime = "шесть минут";
-                break;
-            case "7":
-                resultTime = "семь минут";
-                break;
-            case "8":
-                resultTime = "восемь минут";
-                break;
-            case "9":
-                resultTime = "девять минут";
-                break;
-            case "10":
-                resultTime = "десять минут";
-                break;
-            case "11":
-                resultTime = "одинадцать минут";
-                break;
-            case "12":
-                resultTime = "двенадцать минут";
-                break;
-            case "13":
-                resultTime = "тринадцать минут";
-                break;
-            case "14":
-                resultTime = "четырнадцать минут";
-                break;
-            case "15":
-                resultTime = "пятнадцать минут";
-                break;
-            case "16":
-                resultTime = "шестнадцать минут";
-                break;
-            case "17":
-                resultTime = "семнадцать минут";
-                break;
-            case "18":
-                resultTime = "восемнадцать минут";
-                break;
-            case "19":
-                resultTime = "девятнадцать минут";
-                break;
-            case "20":
-                resultTime = "двадцать минут";
-                break;
+                if (key == ContainerClassType.OPTION)
+                {
+                    timeOutNextContent = ((OptionsAndPreviewViewModel)container)?.InformationTablePreview
+                                                                                ?.Contents
+                                                                                ?.ElementAt(indexNextContent)
+                                                                                ?.TimeOut ?? 0;
+                }
+                else
+                {
+                    timeOutNextContent = ((StationViewModel)container)?.OptionsAndPreviewModel
+                                                                      ?.InformationTablePreview
+                                                                      ?.Contents
+                                                                      ?.ElementAt(indexNextContent)
+                                                                      ?.TimeOut ?? 0;
+                }
+            }
+            else
+            {
+                timeOutNextContent = 0;
+            }
+            return timeOutNextContent;
         }
-        text += $"Через {resultTime} , ожидаем прибытие маршрута номер {item.Rnum}.";
-        text += '\n';
-    }
-    using (SpeechSynthesizer synth = new SpeechSynthesizer())
-    {
-        //var mSoundPlayer = new SoundPlayer();
-        //synth.SetOutputToWaveStream(streamAudio);
-        synth.Speak(text);
-        streamAudio.Position = 0;
-        synth.SetOutputToNull();
-    }
-    return new FileStreamResult(streamAudio, "audio/wav");
-}
 
-private char IsHaveCharacter(string input, out string str)
-{
-    char result = ' ';
-    str = "";
-    foreach (var item in input)
-    {
-        if (!('0' < item && item < '9'))
+        [HttpGet]
+        public static FileStreamResult GetAudioPredictFree(string stationId)
         {
-            result = item;
-            break;
+            var streamAudio = new MemoryStream();
+            var manager = new PredictManager();
+            var predictNotObject = manager.GetStationForecast(stationId).ToList();
+            predictNotObject = predictNotObject.Count() > 4
+                             ? predictNotObject.GetRange(0, 4)
+                             : predictNotObject;
+            var text = "Уважаемые пасажиры!" + '\n';
+            foreach (var item in predictNotObject)
+            {
+                var time = item.Arrt != null
+                    ? (((int)item.Arrt / 60) == 0 ? "1" : ((int)item.Arrt / 60).ToString())
+                    : "";
+                var resultTime = "";
+                switch (time)
+                {
+                    case "1":
+                        resultTime = "одну минуту";
+                        break;
+                    case "2":
+                        resultTime = "две минуты";
+                        break;
+                    case "3":
+                        resultTime = "три минуты";
+                        break;
+                    case "4":
+                        resultTime = "четыре минуты";
+                        break;
+                    case "5":
+                        resultTime = "пять минут";
+                        break;
+                    case "6":
+                        resultTime = "шесть минут";
+                        break;
+                    case "7":
+                        resultTime = "семь минут";
+                        break;
+                    case "8":
+                        resultTime = "восемь минут";
+                        break;
+                    case "9":
+                        resultTime = "девять минут";
+                        break;
+                    case "10":
+                        resultTime = "десять минут";
+                        break;
+                    case "11":
+                        resultTime = "одинадцать минут";
+                        break;
+                    case "12":
+                        resultTime = "двенадцать минут";
+                        break;
+                    case "13":
+                        resultTime = "тринадцать минут";
+                        break;
+                    case "14":
+                        resultTime = "четырнадцать минут";
+                        break;
+                    case "15":
+                        resultTime = "пятнадцать минут";
+                        break;
+                    case "16":
+                        resultTime = "шестнадцать минут";
+                        break;
+                    case "17":
+                        resultTime = "семнадцать минут";
+                        break;
+                    case "18":
+                        resultTime = "восемнадцать минут";
+                        break;
+                    case "19":
+                        resultTime = "девятнадцать минут";
+                        break;
+                    case "20":
+                        resultTime = "двадцать минут";
+                        break;
+                }
+                text += $"Через {resultTime} , ожидаем прибытие маршрута номер {item.Rnum}.";
+                text += '\n';
+            }
+            using (SpeechSynthesizer synth = new SpeechSynthesizer())
+            {
+                //var mSoundPlayer = new SoundPlayer();
+                //synth.SetOutputToWaveStream(streamAudio);
+                synth.Speak(text);
+                streamAudio.Position = 0;
+                synth.SetOutputToNull();
+            }
+            return new FileStreamResult(streamAudio, "audio/wav");
         }
-    }
-    input.ToList()
-         .RemoveAll(c => !(c <= '9' && c >= '0'));
-    foreach (var ch in input)
-    {
-        str += ch;
-    }
-    return result;
-}
 
-public async Task<FileStreamResult> GetAudioPredictYa(string stationId)
-{
-    const string iamKey = "AQVNzRBjik29VT1yshMtwaVKrQBsNfO_Fo0ragsL";
-    IPredictManager manager;
-    List<StationForecast> predictNotObject;
-    manager = new PredictManager();
-    predictNotObject = ((PredictManager)manager).GetStationForecast(stationId).ToList();
-    predictNotObject = predictNotObject.Count() > 4
-                     ? predictNotObject.GetRange(0, 4)
-                     : predictNotObject;
-    var text = "Уважаемые пасажиры!" + '\n';
-    foreach (var item in predictNotObject)
-    {
-        var time = item.Arrt != null
-            ? (((int)item.Arrt / 60) == 0 ? "1" : ((int)item.Arrt / 60).ToString())
-            : "";
-        var resultTime = "";
-        switch (time)
+        private char IsHaveCharacter(string input, out string str)
         {
-            case "1":
-                resultTime = "одну минуту";
-                break;
-            case "2":
-                resultTime = "две минуты";
-                break;
-            case "3":
-                resultTime = "три минуты";
-                break;
-            case "4":
-                resultTime = "четыре минуты";
-                break;
-            case "5":
-                resultTime = "пять минут";
-                break;
-            case "6":
-                resultTime = "шесть минут";
-                break;
-            case "7":
-                resultTime = "семь минут";
-                break;
-            case "8":
-                resultTime = "восемь минут";
-                break;
-            case "9":
-                resultTime = "девять минут";
-                break;
-            case "10":
-                resultTime = "десять минут";
-                break;
-            case "11":
-                resultTime = "одинадцать минут";
-                break;
-            case "12":
-                resultTime = "двенадцать минут";
-                break;
-            case "13":
-                resultTime = "тринадцать минут";
-                break;
-            case "14":
-                resultTime = "четырнадцать минут";
-                break;
-            case "15":
-                resultTime = "пятнадцать минут";
-                break;
-            case "16":
-                resultTime = "шестнадцать минут";
-                break;
-            case "17":
-                resultTime = "семнадцать минут";
-                break;
-            case "18":
-                resultTime = "восемнадцать минут";
-                break;
-            case "19":
-                resultTime = "девятнадцать минут";
-                break;
-            case "20":
-                resultTime = "двадцать минут";
-                break;
+            char result = ' ';
+            str = "";
+            foreach (var item in input)
+            {
+                if (!('0' < item && item < '9'))
+                {
+                    result = item;
+                    break;
+                }
+            }
+            input.ToList()
+                 .RemoveAll(c => !(c <= '9' && c >= '0'));
+            foreach (var ch in input)
+            {
+                str += ch;
+            }
+            return result;
         }
-        /*732*/
-        var charx = IsHaveCharacter(item.Rnum, out var str);
-        text += $"Через {resultTime}, ожидаем прибытие маршрута номер {str} {charx}.";
-        text += '\n';
-    }
-    text = text + " .";
-    HttpClient client = new HttpClient();
-    client.DefaultRequestHeaders.Add("Authorization", "Api-Key " + iamKey);
-    var values = new Dictionary<string, string>
+
+        public async Task<FileStreamResult> GetAudioPredictYa(string stationId)
+        {
+            const string iamKey = "AQVNzRBjik29VT1yshMtwaVKrQBsNfO_Fo0ragsL";
+            IPredictManager manager;
+            List<StationForecast> predictNotObject;
+            manager = new PredictManager();
+            predictNotObject = ((PredictManager)manager).GetStationForecast(stationId).ToList();
+            predictNotObject = predictNotObject.Count() > 4
+                             ? predictNotObject.GetRange(0, 4)
+                             : predictNotObject;
+            var text = "Уважаемые пасажиры!" + '\n';
+            foreach (var item in predictNotObject)
+            {
+                var time = item.Arrt != null
+                    ? (((int)item.Arrt / 60) == 0 ? "1" : ((int)item.Arrt / 60).ToString())
+                    : "";
+                var resultTime = "";
+                switch (time)
+                {
+                    case "1":
+                        resultTime = "одну минуту";
+                        break;
+                    case "2":
+                        resultTime = "две минуты";
+                        break;
+                    case "3":
+                        resultTime = "три минуты";
+                        break;
+                    case "4":
+                        resultTime = "четыре минуты";
+                        break;
+                    case "5":
+                        resultTime = "пять минут";
+                        break;
+                    case "6":
+                        resultTime = "шесть минут";
+                        break;
+                    case "7":
+                        resultTime = "семь минут";
+                        break;
+                    case "8":
+                        resultTime = "восемь минут";
+                        break;
+                    case "9":
+                        resultTime = "девять минут";
+                        break;
+                    case "10":
+                        resultTime = "десять минут";
+                        break;
+                    case "11":
+                        resultTime = "одинадцать минут";
+                        break;
+                    case "12":
+                        resultTime = "двенадцать минут";
+                        break;
+                    case "13":
+                        resultTime = "тринадцать минут";
+                        break;
+                    case "14":
+                        resultTime = "четырнадцать минут";
+                        break;
+                    case "15":
+                        resultTime = "пятнадцать минут";
+                        break;
+                    case "16":
+                        resultTime = "шестнадцать минут";
+                        break;
+                    case "17":
+                        resultTime = "семнадцать минут";
+                        break;
+                    case "18":
+                        resultTime = "восемнадцать минут";
+                        break;
+                    case "19":
+                        resultTime = "девятнадцать минут";
+                        break;
+                    case "20":
+                        resultTime = "двадцать минут";
+                        break;
+                }
+                /*732*/
+                var charx = IsHaveCharacter(item.Rnum, out var str);
+                text += $"Через {resultTime}, ожидаем прибытие маршрута номер {str} {charx}.";
+                text += '\n';
+            }
+            text = text + " .";
+            HttpClient client = new HttpClient();
+            client.DefaultRequestHeaders.Add("Authorization", "Api-Key " + iamKey);
+            var values = new Dictionary<string, string>
             {
                 {"text",text },
                 {"lang","ru-RU" },
             };
-    var content = new FormUrlEncodedContent(values);
-    var response = await client.PostAsync("https://tts.api.cloud.yandex.net/speech/v1/tts:synthesize", content);
-    var resultstream = (MemoryStream)await response.Content.ReadAsStreamAsync();
-    return new FileStreamResult(resultstream, "application / ogg");
-}
-}
+            var content = new FormUrlEncodedContent(values);
+            var response = await client.PostAsync("https://tts.api.cloud.yandex.net/speech/v1/tts:synthesize", content);
+            var resultstream = (MemoryStream)await response.Content.ReadAsStreamAsync();
+            return new FileStreamResult(resultstream, "application / ogg");
+        }
+    }
 }
