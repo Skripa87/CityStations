@@ -635,7 +635,9 @@ namespace CityStations
                 }
                 catch (Exception exception)
                 {
-                    var count = oldEvents.Count - 1;
+                    var count = oldEvents.Count == 0 
+                              ? 0
+                              : oldEvents.Count - 1;
                     partOldEvents = oldEvents.GetRange(0, count);
                     oldEvents.RemoveRange(0,count);
                     marker = true;

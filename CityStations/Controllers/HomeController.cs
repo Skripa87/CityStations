@@ -872,7 +872,7 @@ namespace CityStations.Controllers
             str = "";
             foreach (var item in input)
             {
-                if (!('0' < item && item < '9'))
+                if (!('0' <= item && item <= '9'))
                 {
                     result = item;
                     break;
@@ -969,10 +969,12 @@ namespace CityStations.Controllers
                 }
                 /*732*/
                 var charx = IsHaveCharacter(item.Rnum, out var str);
-                text += $"Через {resultTime}, ожидаем прибытие маршрута номер {str} {charx}.";
-                text += '\n';
+                    text += $"Через {resultTime}, ожидаем прибытие маршрута номер {str} {charx}.";
+                    text += '\n';
             }
-            text = text + " .";
+            text = predictNotObject.Count > 0 
+                 ? text + " ."
+                 : text + "Информация о прибытии транспорта на текущий момент осутствует!";
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Add("Authorization", "Api-Key " + iamKey);
             var values = new Dictionary<string, string>

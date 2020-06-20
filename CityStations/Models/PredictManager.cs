@@ -20,9 +20,7 @@ namespace CityStations.Models
             var manager = new ContextManager();
             var station = manager.GetStation(idStation);
             if (station == null) return new List<StationForecast>();
-            var stationForecasts = (string.Equals(station.Id,"465", new StringComparison()) || string.Equals(station.Id,"466",new StringComparison())) 
-                                 ? new List<StationForecast>() 
-                                 : GetStationForecastGortrans(station.Id).ToList();
+            var stationForecasts = GetStationForecastGortrans(station.Id).ToList();
             if (station.IdForRnis != null)
                 stationForecasts.AddRange(GetStationForecastForR(station.IdForRnis));
             stationForecasts.Sort();
