@@ -1,6 +1,5 @@
 ﻿using CityStations.Models;
 using Microsoft.AspNet.Identity;
-using Renci.SshNet.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,6 +9,7 @@ using System.Speech.Synthesis;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
+using CityStations.Models.StationForecast2020;
 
 //using System.Speech.Synthesis;
 
@@ -55,6 +55,15 @@ namespace CityStations.Controllers
             ViewData["MyAcc"] = User?.Identity
                                     ?.Name == "skripinalexey1987@gmail.com";
             return View();
+        }
+
+        [HttpGet]
+        [Authorize]
+        public ActionResult ReconfigurateAllDevice()
+        {
+            var devManager = new DeviceManager();
+            devManager.ConfigurateAllDevice();
+            return RedirectToAction("IndexAuthtorize");
         }
 
         [HttpGet]
@@ -453,17 +462,7 @@ namespace CityStations.Controllers
         {
             var deviceManager = new DeviceManager();
             if (string.IsNullOrEmpty(ip)) return PartialView("SelectStation", Station);
-            deviceManager.SetAuthenticationInfo("$olnechniKrug2019", "pi");
-            try
-            {
-                deviceManager.ConfigurateDevice(ip, stationId);
-            }
-            catch (SshAuthenticationException ex)
-            {
-                Logger.WriteLog($"{ex.Message}, подробности {ex.StackTrace}", $"SetConfiguration {stationId}");
-                deviceManager.SetAuthenticationInfo("$olnechniKrug", "pi");
-                deviceManager.ConfigurateDevice(ip, stationId);
-            }
+            deviceManager.ConfigurateDevice(ip, stationId);
             _manager = new ContextManager();
             var station = _manager.GetStation(stationId);
             Station = new StationViewModel(station, _moduleTypes, _contentTypes, _selectedModuleTypeId);
@@ -563,11 +562,11 @@ namespace CityStations.Controllers
                                     .Cast<ContentType>()
                                     .ToList();
                 var station = _manager.GetStation(stationId);
-                if (station == null)
+                if (station?.InformationTable == null)
                 {
                     return RedirectToAction("Error");
                 }
-                if (accessCode != station.AccessCode || station.Active == false)
+                if (accessCode != station.InformationTable.AccessCode || station.Active == false)
                 {
                     ViewData["StationId"] = stationId;
                     return RedirectToAction("Error");
@@ -587,7 +586,7 @@ namespace CityStations.Controllers
                     (((Station?.OptionsAndPreviewModel?.InformationTablePreview?.Height ?? 0) / 2) - 10) + "px";
                 ViewData["WidthTablo"] = InformationTableViewModel?.Width ?? 0;
                 ViewData["HeightTablo"] = InformationTableViewModel?.Height ?? 0;
-                Logger.WriteLog($"Поступил запрос от остановки с идентификатором {stationId} - {Station?.Name}",
+                var eventId = Logger.WriteLog($"Поступил запрос от остановки с идентификатором {stationId} - {Station?.Name}",
                     stationId);
                 return View();
             }
@@ -607,14 +606,14 @@ namespace CityStations.Controllers
             {
                 var manager = new ContextManager();
                 var station = manager.GetStation(stationId);
-                if (station?.AccessCode == null)
+                if (station?.InformationTable.AccessCode == null)
                 {
                     ViewData["stationId"] = stationId;
                     return View("Error");
                 }
                 Logger.WriteLog("Выполнено восстановление после критической ошибки!", stationId);
                 return RedirectToAction("DisplayInformationTable",
-                    new { stationId = station.Id, accessCode = station.AccessCode });
+                    new { stationId = station.Id, accessCode = station.InformationTable.AccessCode });
             }
             catch (Exception ex)
             {
@@ -655,7 +654,6 @@ namespace CityStations.Controllers
             station = station ?? new StationModel
             {
                 Id = "Error",
-                AccessCode = "$olnechniKrug",
                 Active = true,
                 Description = "",
                 IdForRnis = null,
@@ -669,6 +667,7 @@ namespace CityStations.Controllers
                     Id = "Error",
                     HeightWithModule = 2,
                     WidthWithModule = 4,
+                    AccessCode = "$olnechniKrug",
                     ModuleType = new ModuleType
                     {
                         CssClass = "p4cssClass",
@@ -782,78 +781,161 @@ namespace CityStations.Controllers
             predictNotObject = predictNotObject.Count() > 4
                              ? predictNotObject.GetRange(0, 4)
                              : predictNotObject;
+            var contextManager = new ContextManager();
+            var station = contextManager.GetStation(stationId);
+            var isNewService = station?.InformationTable?.ServiceType == ServiceType.NEW;
             var text = "Уважаемые пасажиры!" + '\n';
-            foreach (var item in predictNotObject)
+            if (!isNewService)
             {
-                var time = item.Arrt != null
-                    ? (((int)item.Arrt / 60) == 0 ? "1" : ((int)item.Arrt / 60).ToString())
-                    : "";
-                var resultTime = "";
-                switch (time)
+                foreach (StationForecast item in predictNotObject)
                 {
-                    case "1":
-                        resultTime = "одну минуту";
-                        break;
-                    case "2":
-                        resultTime = "две минуты";
-                        break;
-                    case "3":
-                        resultTime = "три минуты";
-                        break;
-                    case "4":
-                        resultTime = "четыре минуты";
-                        break;
-                    case "5":
-                        resultTime = "пять минут";
-                        break;
-                    case "6":
-                        resultTime = "шесть минут";
-                        break;
-                    case "7":
-                        resultTime = "семь минут";
-                        break;
-                    case "8":
-                        resultTime = "восемь минут";
-                        break;
-                    case "9":
-                        resultTime = "девять минут";
-                        break;
-                    case "10":
-                        resultTime = "десять минут";
-                        break;
-                    case "11":
-                        resultTime = "одинадцать минут";
-                        break;
-                    case "12":
-                        resultTime = "двенадцать минут";
-                        break;
-                    case "13":
-                        resultTime = "тринадцать минут";
-                        break;
-                    case "14":
-                        resultTime = "четырнадцать минут";
-                        break;
-                    case "15":
-                        resultTime = "пятнадцать минут";
-                        break;
-                    case "16":
-                        resultTime = "шестнадцать минут";
-                        break;
-                    case "17":
-                        resultTime = "семнадцать минут";
-                        break;
-                    case "18":
-                        resultTime = "восемнадцать минут";
-                        break;
-                    case "19":
-                        resultTime = "девятнадцать минут";
-                        break;
-                    case "20":
-                        resultTime = "двадцать минут";
-                        break;
+                    var time = item.Arrt != null
+                        ? (((int) item.Arrt / 60) == 0 ? "1" : ((int) item.Arrt / 60).ToString())
+                        : "";
+                    var resultTime = "";
+                    switch (time)
+                    {
+                        case "1":
+                            resultTime = "одну минуту";
+                            break;
+                        case "2":
+                            resultTime = "две минуты";
+                            break;
+                        case "3":
+                            resultTime = "три минуты";
+                            break;
+                        case "4":
+                            resultTime = "четыре минуты";
+                            break;
+                        case "5":
+                            resultTime = "пять минут";
+                            break;
+                        case "6":
+                            resultTime = "шесть минут";
+                            break;
+                        case "7":
+                            resultTime = "семь минут";
+                            break;
+                        case "8":
+                            resultTime = "восемь минут";
+                            break;
+                        case "9":
+                            resultTime = "девять минут";
+                            break;
+                        case "10":
+                            resultTime = "десять минут";
+                            break;
+                        case "11":
+                            resultTime = "одинадцать минут";
+                            break;
+                        case "12":
+                            resultTime = "двенадцать минут";
+                            break;
+                        case "13":
+                            resultTime = "тринадцать минут";
+                            break;
+                        case "14":
+                            resultTime = "четырнадцать минут";
+                            break;
+                        case "15":
+                            resultTime = "пятнадцать минут";
+                            break;
+                        case "16":
+                            resultTime = "шестнадцать минут";
+                            break;
+                        case "17":
+                            resultTime = "семнадцать минут";
+                            break;
+                        case "18":
+                            resultTime = "восемнадцать минут";
+                            break;
+                        case "19":
+                            resultTime = "девятнадцать минут";
+                            break;
+                        case "20":
+                            resultTime = "двадцать минут";
+                            break;
+                    }
+
+                    text += $"Через {resultTime} , ожидаем прибытие маршрута номер {item.Rnum}.";
+                    text += '\n';
                 }
-                text += $"Через {resultTime} , ожидаем прибытие маршрута номер {item.Rnum}.";
-                text += '\n';
+            }
+            else
+            {
+                foreach (ForecastsItem item in predictNotObject)
+                {
+                    var time = item.arrTime != null
+                        ? (((int)item.arrTime / 60) == 0 ? "1" : ((int)item.arrTime / 60).ToString())
+                        : "";
+                    var resultTime = "";
+                    switch (time)
+                    {
+                        case "1":
+                            resultTime = "одну минуту";
+                            break;
+                        case "2":
+                            resultTime = "две минуты";
+                            break;
+                        case "3":
+                            resultTime = "три минуты";
+                            break;
+                        case "4":
+                            resultTime = "четыре минуты";
+                            break;
+                        case "5":
+                            resultTime = "пять минут";
+                            break;
+                        case "6":
+                            resultTime = "шесть минут";
+                            break;
+                        case "7":
+                            resultTime = "семь минут";
+                            break;
+                        case "8":
+                            resultTime = "восемь минут";
+                            break;
+                        case "9":
+                            resultTime = "девять минут";
+                            break;
+                        case "10":
+                            resultTime = "десять минут";
+                            break;
+                        case "11":
+                            resultTime = "одинадцать минут";
+                            break;
+                        case "12":
+                            resultTime = "двенадцать минут";
+                            break;
+                        case "13":
+                            resultTime = "тринадцать минут";
+                            break;
+                        case "14":
+                            resultTime = "четырнадцать минут";
+                            break;
+                        case "15":
+                            resultTime = "пятнадцать минут";
+                            break;
+                        case "16":
+                            resultTime = "шестнадцать минут";
+                            break;
+                        case "17":
+                            resultTime = "семнадцать минут";
+                            break;
+                        case "18":
+                            resultTime = "восемнадцать минут";
+                            break;
+                        case "19":
+                            resultTime = "девятнадцать минут";
+                            break;
+                        case "20":
+                            resultTime = "двадцать минут";
+                            break;
+                    }
+
+                    text += $"Через {resultTime} , ожидаем прибытие маршрута номер {item.num}.";
+                    text += '\n';
+                }
             }
             using (SpeechSynthesizer synth = new SpeechSynthesizer())
             {
@@ -891,87 +973,173 @@ namespace CityStations.Controllers
         {
             const string iamKey = "AQVNzRBjik29VT1yshMtwaVKrQBsNfO_Fo0ragsL";
             IPredictManager manager;
-            List<StationForecast> predictNotObject;
+            List<IForecast> predictNotObject;
             manager = new PredictManager();
             predictNotObject = ((PredictManager)manager).GetStationForecast(stationId).ToList();
             predictNotObject = predictNotObject.Count() > 4
                              ? predictNotObject.GetRange(0, 4)
                              : predictNotObject;
+            var contextManager = new ContextManager();
+            var station = contextManager.GetStation(stationId);
+            var isNewService = station?.InformationTable?.ServiceType == ServiceType.NEW;
             var text = "Уважаемые пасажиры!" + '\n';
-            foreach (var item in predictNotObject)
+            if (isNewService)
             {
-                var time = item.Arrt != null
-                    ? (((int)item.Arrt / 60) == 0 ? "1" : ((int)item.Arrt / 60).ToString())
-                    : "";
-                var resultTime = "";
-                switch (time)
+                foreach (StationForecast item in predictNotObject)
                 {
-                    case "1":
-                        resultTime = "одну минуту";
-                        break;
-                    case "2":
-                        resultTime = "две минуты";
-                        break;
-                    case "3":
-                        resultTime = "три минуты";
-                        break;
-                    case "4":
-                        resultTime = "четыре минуты";
-                        break;
-                    case "5":
-                        resultTime = "пять минут";
-                        break;
-                    case "6":
-                        resultTime = "шесть минут";
-                        break;
-                    case "7":
-                        resultTime = "семь минут";
-                        break;
-                    case "8":
-                        resultTime = "восемь минут";
-                        break;
-                    case "9":
-                        resultTime = "девять минут";
-                        break;
-                    case "10":
-                        resultTime = "десять минут";
-                        break;
-                    case "11":
-                        resultTime = "одинадцать минут";
-                        break;
-                    case "12":
-                        resultTime = "двенадцать минут";
-                        break;
-                    case "13":
-                        resultTime = "тринадцать минут";
-                        break;
-                    case "14":
-                        resultTime = "четырнадцать минут";
-                        break;
-                    case "15":
-                        resultTime = "пятнадцать минут";
-                        break;
-                    case "16":
-                        resultTime = "шестнадцать минут";
-                        break;
-                    case "17":
-                        resultTime = "семнадцать минут";
-                        break;
-                    case "18":
-                        resultTime = "восемнадцать минут";
-                        break;
-                    case "19":
-                        resultTime = "девятнадцать минут";
-                        break;
-                    case "20":
-                        resultTime = "двадцать минут";
-                        break;
-                }
-                /*732*/
-                var charx = IsHaveCharacter(item.Rnum, out var str);
+                    var time = item.Arrt != null
+                        ? (((int) item.Arrt / 60) == 0 ? "1" : ((int) item.Arrt / 60).ToString())
+                        : "";
+                    var resultTime = "";
+                    switch (time)
+                    {
+                        case "1":
+                            resultTime = "одну минуту";
+                            break;
+                        case "2":
+                            resultTime = "две минуты";
+                            break;
+                        case "3":
+                            resultTime = "три минуты";
+                            break;
+                        case "4":
+                            resultTime = "четыре минуты";
+                            break;
+                        case "5":
+                            resultTime = "пять минут";
+                            break;
+                        case "6":
+                            resultTime = "шесть минут";
+                            break;
+                        case "7":
+                            resultTime = "семь минут";
+                            break;
+                        case "8":
+                            resultTime = "восемь минут";
+                            break;
+                        case "9":
+                            resultTime = "девять минут";
+                            break;
+                        case "10":
+                            resultTime = "десять минут";
+                            break;
+                        case "11":
+                            resultTime = "одинадцать минут";
+                            break;
+                        case "12":
+                            resultTime = "двенадцать минут";
+                            break;
+                        case "13":
+                            resultTime = "тринадцать минут";
+                            break;
+                        case "14":
+                            resultTime = "четырнадцать минут";
+                            break;
+                        case "15":
+                            resultTime = "пятнадцать минут";
+                            break;
+                        case "16":
+                            resultTime = "шестнадцать минут";
+                            break;
+                        case "17":
+                            resultTime = "семнадцать минут";
+                            break;
+                        case "18":
+                            resultTime = "восемнадцать минут";
+                            break;
+                        case "19":
+                            resultTime = "девятнадцать минут";
+                            break;
+                        case "20":
+                            resultTime = "двадцать минут";
+                            break;
+                    }
+
+                    /*732*/
+                    var charx = IsHaveCharacter(item.Rnum, out var str);
                     text += $"Через {resultTime}, ожидаем прибытие маршрута номер {str} {charx}.";
                     text += '\n';
+                }
             }
+            else
+            {
+                foreach (ForecastsItem item in predictNotObject)
+                {
+                    var time = item.arrTime != null
+                        ? (((int)item.arrTime / 60) == 0 ? "1" : ((int)item.arrTime / 60).ToString())
+                        : "";
+                    var resultTime = "";
+                    switch (time)
+                    {
+                        case "1":
+                            resultTime = "одну минуту";
+                            break;
+                        case "2":
+                            resultTime = "две минуты";
+                            break;
+                        case "3":
+                            resultTime = "три минуты";
+                            break;
+                        case "4":
+                            resultTime = "четыре минуты";
+                            break;
+                        case "5":
+                            resultTime = "пять минут";
+                            break;
+                        case "6":
+                            resultTime = "шесть минут";
+                            break;
+                        case "7":
+                            resultTime = "семь минут";
+                            break;
+                        case "8":
+                            resultTime = "восемь минут";
+                            break;
+                        case "9":
+                            resultTime = "девять минут";
+                            break;
+                        case "10":
+                            resultTime = "десять минут";
+                            break;
+                        case "11":
+                            resultTime = "одинадцать минут";
+                            break;
+                        case "12":
+                            resultTime = "двенадцать минут";
+                            break;
+                        case "13":
+                            resultTime = "тринадцать минут";
+                            break;
+                        case "14":
+                            resultTime = "четырнадцать минут";
+                            break;
+                        case "15":
+                            resultTime = "пятнадцать минут";
+                            break;
+                        case "16":
+                            resultTime = "шестнадцать минут";
+                            break;
+                        case "17":
+                            resultTime = "семнадцать минут";
+                            break;
+                        case "18":
+                            resultTime = "восемнадцать минут";
+                            break;
+                        case "19":
+                            resultTime = "девятнадцать минут";
+                            break;
+                        case "20":
+                            resultTime = "двадцать минут";
+                            break;
+                    }
+
+                    /*732*/
+                    var charx = IsHaveCharacter(item.num, out var str);
+                    text += $"Через {resultTime}, ожидаем прибытие маршрута номер {str} {charx}.";
+                    text += '\n';
+                }
+            }
+
             text = predictNotObject.Count > 0 
                  ? text + " ."
                  : text + "Информация о прибытии транспорта на текущий момент осутствует!";

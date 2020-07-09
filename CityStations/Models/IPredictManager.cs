@@ -13,7 +13,7 @@ namespace CityStations.Models
 {
     public interface IPredictManager
     {
-        IEnumerable<StationForecast> GetStationForecast(string idStation);
+        IEnumerable<IForecast> GetStationForecast(string idStation);
         IEnumerable<Station> GetStations();
         string GetLatLngStationFor(string idStation);
     }
@@ -26,7 +26,7 @@ namespace CityStations.Models
             throw new NotImplementedException();
         }
 
-        public IEnumerable<StationForecast> GetStationForecast(string idStation)
+        public IEnumerable<IForecast> GetStationForecast(string idStation)
         {
             throw new NotImplementedException();
         }

@@ -218,6 +218,7 @@
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
     <Compile Include="Controllers\OfflineController.cs" />
+    <Compile Include="CurrentRequestSituations.cs" />
     <Compile Include="CurrentWeather.cs" />
     <Compile Include="DeviceManager.cs" />
     <Compile Include="Global.asax.cs">
@@ -243,6 +244,7 @@
     <Compile Include="Models\Event.cs" />
     <Compile Include="Models\IContent.cs" />
     <Compile Include="Models\IdentityModels.cs" />
+    <Compile Include="Models\IForecast.cs" />
     <Compile Include="Models\InformationTable.cs" />
     <Compile Include="Models\IPredictManager.cs" />
     <Compile Include="Models\JsonClassRnisService\GetTransportByCheckPoint\AdministrativeUnits.cs" />
@@ -263,6 +265,8 @@
     <Compile Include="Models\Rain.cs" />
     <Compile Include="Models\ReservCityStationsDbContext.cs" />
     <Compile Include="Models\Station.cs" />
+    <Compile Include="Models\StationForecast2020\ForecastItem.cs" />
+    <Compile Include="Models\StationForecast2020\Root.cs" />
     <Compile Include="Models\StationModel.cs" />
     <Compile Include="Models\StationForecast.cs" />
     <Compile Include="Models\Sys.cs" />

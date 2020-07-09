@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using CityStations.Models.StationForecast2020;
 using Herald.Models.JsonClassRnisService.GetTransportsByCheckPoint;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -15,7 +16,7 @@ namespace CityStations.Models
     public class PredictManager : AbstractPredictManager
     {
 
-        public new IEnumerable<StationForecast> GetStationForecast(string idStation)
+        public new IEnumerable<IForecast> GetStationForecast(string idStation)
         {
             var manager = new ContextManager();
             var station = manager.GetStation(idStation);
@@ -27,13 +28,17 @@ namespace CityStations.Models
             return stationForecasts;
         }
 
-        public IEnumerable<StationForecast> GetStationForecastGortrans(string idStation)
+        public IEnumerable<IForecast> GetStationForecastGortrans(string idStation)
         {
             string result = null;
+            var contextManager = new ContextManager();
+            var station = contextManager.GetStation(idStation);
+            if (station == null) return null;
             try
             {
-                var http = new Uri(
-                    $"http://glonass.ufagortrans.ru/php/getStationForecasts.php?sid={idStation}&type=0&city=ufagortrans&info=12345&_=1517558480816");
+                var http = station.InformationTable?.ServiceType == null || station.InformationTable.ServiceType == ServiceType.OLD
+                         ? new Uri($"http://glonass.ufagortrans.ru/php/getStationForecasts.php?sid={idStation}&type=0&city=ufagortrans&info=12345&_=1517558480816")
+                         : new Uri($"http://176.118.208.48:5819/getForecasts.php?id={idStation}");
                 var request = (HttpWebRequest)WebRequest.Create(http);
                 using (var response = (HttpWebResponse)request.GetResponse())
                 using (var stream = response.GetResponseStream())
@@ -56,10 +61,21 @@ namespace CityStations.Models
 
             try
             {
-                var jResult = JToken.Parse(result).ToObject<IEnumerable<StationForecast>>()
-                    .ToList();
-                jResult.RemoveAll(j => j.Arrt < 20 || j.Arrt > 1201);
-                return jResult;
+                if (station.InformationTable?.ServiceType == null ||
+                    station.InformationTable?.ServiceType == ServiceType.OLD)
+                {
+                    var jResult = JToken.Parse(result).ToObject<IEnumerable<StationForecast>>()
+                        .ToList();
+                    jResult.RemoveAll(j => j.Arrt < 20 || j.Arrt > 1201);
+                    return jResult;
+                }
+                else
+                {
+                    var jResult = JToken.Parse(result).ToObject<Root>();
+                    if(jResult == null) return new List<IForecast>();
+                    jResult.forecasts.RemoveAll(j => j.arrTime < 20 || j.arrTime > 1201);
+                    return jResult.forecasts;
+                }
             }
             catch (Exception ex)
             {

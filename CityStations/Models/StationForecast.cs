@@ -2,7 +2,7 @@ using System;
 
 namespace CityStations.Models
 {
-    public partial class StationForecast:IComparable
+    public partial class StationForecast:IComparable, IForecast
     {
         public int Id { get; set; }
         public double? Arrt { get; set; }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Web.Mvc;
+using CityStations.Models.StationForecast2020;
 
 namespace CityStations.Models
 {
@@ -214,24 +215,41 @@ namespace CityStations.Models
     {
         private string StationId { get; set; }
         private int RowCount { get; set; }
+        public bool IsNewService { get; set; }
 
-        public ForecastContent(int timeOut, string stationId, int rowCount, int index)
+        public ForecastContent(int timeOut, string stationId, int rowCount, int index, bool isNewService)
         {
             TimeOut = timeOut;
             IndexInContent = index;
             ContentType = ContentType.FORECAST;
             StationId = stationId;
             RowCount = rowCount;
+            IsNewService = isNewService;
         }
 
         private object GetPredict(string stationId, int rowCount)
         {
             var stationForecasts = (new PredictManager()).GetStationForecast(stationId) ?? new List<StationForecast>();
             var result = new List<Predict>();
-            foreach (var item in stationForecasts)
+            var manager = new ContextManager();
+            var station = manager.GetStation(stationId);
+            if (station == null) return null;
+            if (station?.InformationTable?.ServiceType == null ||
+                station?.InformationTable?.ServiceType == ServiceType.OLD)
             {
-                var predict = new Predict(item);
-                result.Add(predict);
+                foreach (var item in stationForecasts)
+                {
+                    var predict = new Predict((StationForecast)item);
+                    result.Add(predict);
+                }
+            }
+            else
+            {
+                foreach (var item in stationForecasts)
+                {
+                    var predict = new Predict((ForecastsItem)item);
+                    result.Add(predict);
+                }
             }
             return result.Count == 0 
                    ? (object)new WeatherDateTimeContent(TimeOut,StationId,IndexInContent)
@@ -302,8 +320,9 @@ namespace CityStations.Models
             var manager = new ContextManager();
             if (!string.IsNullOrEmpty(informationTableId))
             {
-                var contents = manager.GetInformationTable(informationTableId)
-                                                 .Contents;
+                var informationTable = manager.GetInformationTable(informationTableId);
+                var isNewService = informationTable.ServiceType == ServiceType.NEW;
+                var contents = informationTable.Contents;
                 int index = 0;
                 foreach (var item in contents)
                 {
@@ -327,7 +346,7 @@ namespace CityStations.Models
                             result.Add(new WeatherDateTimeContent(item.TimeOut, item.InnerContent, index));
                             break;
                         case ContentType.FORECAST:
-                            result.Add(new ForecastContent(item.TimeOut, StationId, RowCount, index)); break;
+                            result.Add(new ForecastContent(item.TimeOut, StationId, RowCount, index, isNewService)); break;
                     }
                     index++;
                 }
@@ -422,7 +441,7 @@ namespace CityStations.Models
                                        ?.HeightWithModule ?? 0;
             RowCount = station.InformationTable
                               ?.RowCount ?? 0;
-            IpAddress = station.IpDevice;
+            IpAddress = station.InformationTable?.IpDevice ?? "";
             var list = new List<SelectListItem>();
             foreach (var item in moduleTypes)
             {

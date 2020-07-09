@@ -31,21 +31,23 @@ namespace CityStations
                      .ToList();
         }
 
-        public void CreateEvent(string msg, string initiator)
+        public string CreateEvent(string msg, string initiator)
         {
             if (string.IsNullOrEmpty(msg))
             {
-                return;
+                return null;
             }
             if (string.IsNullOrEmpty(initiator))
             {
                 initiator = "-9999";
             }
             var eventDb = new Event(msg, initiator);
-            db.Events.Add(eventDb);
+            db.Events
+              .Add(eventDb);
             try
             {
                 db.SaveChanges();
+                return eventDb.Id;
             }
             catch (System.Data.Entity.Validation.DbEntityValidationException dbEx)
             {
@@ -61,6 +63,7 @@ namespace CityStations
                     }
                 }
             }
+            return null;
         }
 
         public List<Event> GetEventFromDate(DateTime? dateStart, DateTime? dateEnd, EventType? eventType)
@@ -95,14 +98,20 @@ namespace CityStations
             var station = db.Stations.Any(s => s.Id == stationId)
                         ? db.Stations.FirstOrDefault(s => s.Id == stationId)
                         : null;
-            if (station == null) return null;
-            var accessCode = string.IsNullOrEmpty(station.AccessCode)
+            if (station?.InformationTable == null) return null;
+            var informationTable = db.InformationTables
+                                     .Any(i => string.Equals(i.Id, station.InformationTable.Id, new StringComparison()))
+                                 ? db.InformationTables
+                                     .FirstOrDefault(i => string.Equals(i.Id, station.InformationTable.Id, new StringComparison()))
+                                 : null;
+            if (informationTable == null) return null;
+            var accessCode = string.IsNullOrEmpty(informationTable.AccessCode)
                            ? Guid.NewGuid()
                                  .ToString()
-                           : station.AccessCode;
-            if (string.IsNullOrEmpty(station.AccessCode))
+                           : informationTable.AccessCode;
+            if (string.IsNullOrEmpty(informationTable.AccessCode))
             {
-                station.AccessCode = accessCode;
+                informationTable.AccessCode = accessCode;
                 try
                 {
                     db.SaveChanges();
@@ -256,7 +265,6 @@ namespace CityStations
                 station = new StationModel
                 {
                     Id = "Error",
-                    AccessCode = "$olnechniKrug",
                     Active = true,
                     Description = "",
                     IdForRnis = null,
@@ -268,8 +276,9 @@ namespace CityStations
                     InformationTable = new InformationTable
                     {
                         Id = "Error",
-                        HeightWithModule = 80,
-                        WidthWithModule = 320,
+                        AccessCode = "$olnechniKrug",
+                        HeightWithModule = 2,
+                        WidthWithModule = 4,
                         ModuleType = db.ModuleTypes.Find("Q4Y10V5H"),
                         RowCount = 4,
                         Contents = new List<Content>
@@ -486,13 +495,19 @@ namespace CityStations
         public void SetIpAddressDevice(string stationId, string ipAddress)
         {
             if (string.IsNullOrEmpty(stationId)) return;
-            var station = db.Stations.Any(s => string.Equals(s.Id, stationId))
-                ? db.Stations.FirstOrDefault(s => string.Equals(s.Id, stationId))
+            var station = db.Stations.Any(s => string.Equals(s.Id, stationId,new StringComparison()))
+                ? db.Stations.FirstOrDefault(s => string.Equals(s.Id, stationId, new StringComparison()))
                 : null;
-            if (station == null) return;
-            station.IpDevice = string.IsNullOrEmpty(station.IpDevice) || !string.Equals(station.IpDevice,ipAddress) 
+            if (station?.InformationTable == null) return;
+            var informationTable = db.InformationTables
+                                     .Any(i => string.Equals(i.Id, station.InformationTable.Id, new StringComparison()))
+                                 ? db.InformationTables
+                                     .FirstOrDefault(i => string.Equals(i.Id, station.InformationTable.Id, new StringComparison()))
+                                 : null;
+            if (informationTable == null) return;
+            informationTable.IpDevice = string.IsNullOrEmpty(informationTable.IpDevice) || !string.Equals(informationTable.IpDevice,ipAddress, new StringComparison()) 
                              ? ipAddress
-                             :station.IpDevice;
+                             :informationTable.IpDevice;
             try
             {
                 db.SaveChanges();
