@@ -13,36 +13,40 @@ catch (Exception e)
 {
     weatherDateTimeContent = (CityStations.Models.WeatherDateTimeContent)Model.PresentContent();
 }
-@if (predicts != null)
+@if (predicts != null && predicts.Count > 0)
 {
     foreach (var item in predicts)
     {
-    <div class="row informationStationForecast">
-        <div class="col-lg-2 col-2 @cssClass @(cssClass + "forecastCssClass")">
-            <span>
-                <img style="float:left;width:15px;padding-top: 3px;padding-right: 1px;" class="img-responsive" src="@item.TypeBus"/>
-                <p class="@(cssClass + "infotext")">@(item?.NumberBus ?? "")</p>
-            </span>
+        <div class="row informationStationForecast">
+            <div class="col-lg-3 col-3 @cssClass @(cssClass + "forecastCssClass")">
+                <span>
+                    <img style="float:left;width:15px;padding-top: 3px;padding-right: 1px;" class="img-responsive" src="@item.TypeBus" />
+                    @if (!string.IsNullOrEmpty(item.LowFloor))
+                    {
+                        <img style="float: left; width: 15px; padding-top: 3px; padding-right: 1px;" class="img-responsive" src="@item.LowFloor"/>
+                    }
+                    <p class="@(cssClass + "infotext")">@(item?.NumberBus ?? "")</p>
+                </span>
+            </div>
+            @if (cssClass.Contains("8"))
+            {
+                <div class="col-lg-7 col-7 @cssClass @(cssClass + "forecastCssClass")">
+                    <p class="@(cssClass + "infotext")">@(item?.EndStation ?? "")</p>
+                </div>
+                <div class="col-lg-2 col-2 @cssClass @(cssClass + "forecastCssClass")" style="text-align:right;padding-right:1px;">
+                    <p class="@(cssClass + "infotext")">@(item?.TimePredict ?? "")</p>
+                </div>
+            }
+            else
+            {
+                <div class="col-lg-8 col-8 @cssClass @(cssClass + "forecastCssClass")">
+                    <p class="@(cssClass + "infotext")">@(item?.EndStation ?? "")</p>
+                </div>
+                <div class="col-lg-1 col-1 @cssClass @(cssClass + "forecastCssClass")">
+                    <p class="@(cssClass + "infotext")">@(item?.TimePredict ?? "")</p>
+                </div>
+            }
         </div>
-        @if (cssClass.Contains("8"))
-        {
-            <div class="col-lg-8 col-8 @cssClass @(cssClass + "forecastCssClass")">
-                <p class="@(cssClass + "infotext")">@(item?.EndStation ?? "")</p>
-            </div>
-            <div class="col-lg-2 col-2 @cssClass @(cssClass + "forecastCssClass")" style="text-align:right;padding-right:1px;">
-                <p class="@(cssClass + "infotext")">@(item?.TimePredict ?? "")</p>
-            </div>
-        }
-        else
-        {
-            <div class="col-lg-9 col-9 @cssClass @(cssClass + "forecastCssClass")">
-                <p class="@(cssClass + "infotext")">@(item?.EndStation ?? "")</p>
-            </div>
-            <div class="col-lg-1 col-1 @cssClass @(cssClass + "forecastCssClass")">
-                <p class="@(cssClass + "infotext")">@(item?.TimePredict ?? "")</p>
-            </div>
-        }
-    </div>
     }
 }
 else

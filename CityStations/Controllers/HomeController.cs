@@ -82,6 +82,8 @@ namespace CityStations.Controllers
             Logger.WriteLog($"Пользователь {User?.Identity?.GetUserName() ?? "Не определеный пользователь"} зашел в систему!", User?.Identity?.GetUserId() ?? "HomeController");
             ViewData["MyAcc"] = User?.Identity
                                     ?.Name == "skripinalexey1987@gmail.com";
+            _manager = new ContextManager();
+            _manager.CheckAllAccessCodeInInformationTable();
             return View();
         }
 

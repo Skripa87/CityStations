@@ -5,10 +5,10 @@ namespace CityStations.Models
 {
     public enum ServiceType{OLD, NEW }
 
-    public sealed class InformationTable
+    public class InformationTable
     {
         public string Id { get; set; }
-        public ModuleType ModuleType { get; set; }
+        public virtual ModuleType ModuleType { get; set; }
         public int WidthWithModule { get; set; }
         public int HeightWithModule { get; set; }
         public int RowCount { get; set; }
@@ -17,7 +17,7 @@ namespace CityStations.Models
         public string UserNameDevice { get; set; }
         public string PasswordDevice { get; set; }
         public ServiceType ServiceType { get; set; }
-        public List<Content> Contents { get; set; }
+        public virtual List<Content> Contents { get; set; }
 
         public InformationTableViewModel GetViewModel(string stationId)
         {

@@ -297,6 +297,8 @@
     <Content Include="Content\Images\icons\icon-512x512.png" />
     <Content Include="Content\Images\icons\icon-72x72.png" />
     <Content Include="Content\Images\icons\icon-96x96.png" />
+    <Content Include="Content\Images\marshrutka.png" />
+    <Content Include="Content\Images\spec_bus.png" />
     <Content Include="Content\Images\trolleybus.png" />
     <Content Include="Content\Images\Ufa-flag.jpg" />
     <Content Include="css\style.css" />

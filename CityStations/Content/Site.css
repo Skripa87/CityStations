@@ -15,7 +15,7 @@
     margin-left: 57px;
     font-size: 16px;
     font-weight: 600;
-    color: white;
+    color: red;
 }
 .functionality_BAD_WORK {
     background-color: coral;
@@ -268,7 +268,7 @@ h5.headerBox {
 .informationStationForecast {
     margin-left: 0;
     margin-right: 0;
-    color: white;
+    color: red;
 }
 
 .p4cssClass {
@@ -343,7 +343,7 @@ p.p4cssClass-infotext {
 .p4cssClass-currentDate {
     font-size: 17px;
     font-family: 'Kelly Slab', cursive;
-    color: white;
+    color: red;
 }
 
 .p4cssClass-currentTime {
@@ -352,7 +352,7 @@ p.p4cssClass-infotext {
     font-family: 'Kelly Slab', cursive;
     margin-left: -15px;
     margin-top: -15px;
-    color: white;
+    color: red;
 }
 
 .p8cssClass-headerCity {
@@ -370,7 +370,7 @@ p.p8cssClass-infotext {
 .p8cssClass-currentDate {
     font-size: 14px;
     font-family: 'Kelly Slab', cursive;
-    color: white;
+    color: red;
     margin-left: -5px;
 }
 
@@ -380,7 +380,7 @@ p.p8cssClass-infotext {
     font-family: 'Kelly Slab', cursive;
     margin-top: -8px;
     margin-left: -5px;
-    color: white;
+    color: red;
 }
 
 input#searchBoxId {
@@ -394,7 +394,7 @@ input#searchBoxId {
 
 .p8cssClassinfotext, .p4cssClassinfotext {
     margin: 0;
-    color: white;
+    color: red;
     white-space: nowrap;
     overflow: hidden;
 }
@@ -406,7 +406,7 @@ input#searchBoxId {
 }
 
 .p8cssClass-textInWeatherHeader {
-    color: white;
+    color: red;
     margin: 0;
 }
 

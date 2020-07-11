@@ -10,7 +10,7 @@ namespace CityStations.Models.StationForecast2020
         public int routeId { get; set; }
         public string type { get; set; }
         public string num { get; set; }
-        public int arrTime { get; set; }
+        public int? arrTime { get; set; }
         public string whereGo { get; set; }
         public string lastStation { get; set; }
         public string vehicleId { get; set; }

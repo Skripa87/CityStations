@@ -93,6 +93,32 @@ namespace CityStations
                   : null;
         }
 
+        public void CheckAllAccessCodeInInformationTable()
+        {
+            foreach (var item in db.InformationTables)
+            {
+                item.CheckAccessCode();
+            }
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (System.Data.Entity.Validation.DbEntityValidationException dbEx)
+            {
+                Exception raise = dbEx;
+                foreach (var validationErrors in dbEx.EntityValidationErrors)
+                {
+                    foreach (var validationError in validationErrors.ValidationErrors)
+                    {
+                        string message = $"{validationErrors.Entry.Entity}:{validationError.ErrorMessage}";
+                        // raise a new exception nesting
+                        // the current instance as InnerException
+                        raise = new InvalidOperationException(message, raise);
+                    }
+                }
+            }
+        }
+
         public string SetAccessCode(string stationId)
         {
             var station = db.Stations.Any(s => s.Id == stationId)
@@ -322,6 +348,18 @@ namespace CityStations
         public List<Content> GetContents()
         {
             return db.Contents.ToList();
+        }
+
+        public List<Content> GetContents(string informationTableId)
+        {
+            return db.Contents
+                     .Any(i=>i.InformationTables.Select(s=>s.Id)
+                                                .Contains(informationTableId))
+                   ? db.Contents
+                       .Where(i => i.InformationTables.Select(s => s.Id)
+                                                      .Contains(informationTableId))
+                       .ToList()
+                   : new List<Content>();
         }
 
         public Content GetContent(string contentId)

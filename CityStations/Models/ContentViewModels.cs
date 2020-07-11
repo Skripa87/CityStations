@@ -491,8 +491,7 @@ namespace CityStations.Models
             }
             ModuleTypes = new SelectList(list);
             ContentOptions = new List<ContentOption>();
-            var contents = station.InformationTable
-                                  ?.Contents;
+            var contents = station.InformationTable?.Contents;
             if (contents != null)
             {
                 foreach (var item in contents)

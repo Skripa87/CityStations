@@ -1,4 +1,6 @@
-﻿namespace CityStations.Models
+﻿using System;
+
+namespace CityStations.Models
 {
     public class Predict
     {
@@ -19,27 +21,31 @@
                           ? "1"
                           : ((int)stationForecast.Arrt / 60).ToString())
                         : "";
-            TypeBus = stationForecast.Rtype != "T"
-                ? $"~/../../Content/Images/bus.png"
-                : $"~/../../Content/Images/trolleybus.png";
-            LowFloor = ".";
+            TypeBus = string.Equals(stationForecast.Rtype.ToUpperInvariant(), "Т", new StringComparison())
+                ? $"~/../../Content/Images/trolleybus.png"
+                : (string.Equals(stationForecast.Rtype.ToUpperInvariant(), "М", new StringComparison())
+                    ? $"~/../../Content/Images/marshrutka.png"
+                    : $"~/../../Content/Images/bus.png");
+            LowFloor = "";
         }
 
         public Predict(StationForecast2020.ForecastsItem forecastItem)
         {
             NumberBus = forecastItem.num;
             LowFloor = forecastItem.lowFloor
-                     ? "yes"
-                     : "no";
-            EndStation = forecastItem.lastStation;
+                     ? $"~/../../Content/Images/spec_bus.png"
+                     : "";
+            EndStation = forecastItem.whereGo;
             TimePredict = forecastItem.arrTime!= null
                         ? (((int)forecastItem.arrTime / 60) == 0
                             ? "1"
                             : ((int)forecastItem.arrTime / 60).ToString())
                         : "";
-            TypeBus = forecastItem.type != "T"
-                ? $"~/../../Content/Images/bus.png"
-                : $"~/../../Content/Images/trolleybus.png";
+            TypeBus = string.Equals(forecastItem.type.ToUpperInvariant(),"Т",new StringComparison())
+                ? $"~/../../Content/Images/trolleybus.png"
+                : (string.Equals(forecastItem.type.ToUpperInvariant(), "М", new StringComparison())
+                  ? $"~/../../Content/Images/marshrutka.png"
+                  : $"~/../../Content/Images/bus.png");
         }
     }
 }

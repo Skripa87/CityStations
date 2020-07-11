@@ -18742,7 +18742,7 @@ select.form-control.border-dark:focus, .dataTables_wrapper select.border-dark:fo
 }
 
 .icon-box-secondary i {
-    color: white;
+    color: red;
     font-size: 1.25rem;
 }
 
@@ -18764,7 +18764,7 @@ select.form-control.border-dark:focus, .dataTables_wrapper select.border-dark:fo
 }
 
 .icon-box-success i {
-    color: white;
+    color: red;
     font-size: 1.25rem;
 }
 
@@ -18786,7 +18786,7 @@ select.form-control.border-dark:focus, .dataTables_wrapper select.border-dark:fo
 }
 
 .icon-box-info i {
-    color: white;
+    color: red;
     font-size: 1.25rem;
 }
 
@@ -18808,7 +18808,7 @@ select.form-control.border-dark:focus, .dataTables_wrapper select.border-dark:fo
 }
 
 .icon-box-warning i {
-    color: white;
+    color: red;
     font-size: 1.25rem;
 }
 
@@ -18830,7 +18830,7 @@ select.form-control.border-dark:focus, .dataTables_wrapper select.border-dark:fo
 }
 
 .icon-box-danger i {
-    color: white;
+    color: red;
     font-size: 1.25rem;
 }
 
@@ -18852,7 +18852,7 @@ select.form-control.border-dark:focus, .dataTables_wrapper select.border-dark:fo
 }
 
 .icon-box-light i {
-    color: white;
+    color: red;
     font-size: 1.25rem;
 }
 
@@ -18874,7 +18874,7 @@ select.form-control.border-dark:focus, .dataTables_wrapper select.border-dark:fo
 }
 
 .icon-box-dark i {
-    color: white;
+    color: red;
     font-size: 1.25rem;
 }
 
