@@ -32,7 +32,7 @@ namespace CityStations.Models
             var lastEventDateTime = eventsByStation?.OrderBy(e => e.Date)
                                                    .LastOrDefault()
                                                    ?.Date ?? DateTime.MinValue;
-            if (DateTime.Equals(lastEventDateTime, DateTime.MinValue)) 
+            if (DateTime.Equals(lastEventDateTime, DateTime.MinValue)|| DateTime.Now - lastEventDateTime > TimeSpan.FromMinutes(5)) 
             {
                 AnaliticFunctionalityString = "Табло не работает(мин. 1 день)";
                 AnaliticFunctionality = AnaliticFunctionality.NOT_WORK;
@@ -40,7 +40,7 @@ namespace CityStations.Models
                                         ?.Date ?? DateTime.MinValue;
                 LastStationActivity = lastEventDateTime.ToString($"yyyy/MM/dd HH:mm:ss", new CultureInfo("All"));
             }
-            else if(DateTime.Now - lastEventDateTime > TimeSpan.FromSeconds(60.0))
+            else if(DateTime.Now - lastEventDateTime > TimeSpan.FromSeconds(60.0) && DateTime.Now - lastEventDateTime < TimeSpan.FromMinutes(5))
             {
                 AnaliticFunctionalityString = "Есть проблемы!";
                 AnaliticFunctionality = AnaliticFunctionality.BAD_WORK;

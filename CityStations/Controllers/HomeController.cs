@@ -497,9 +497,9 @@ namespace CityStations.Controllers
             {
                 _manager = new ContextManager();
                 var stations = _manager.GetActivStations();
-                _manager.RemoveOldEvents();
-                var eventsByFiveMinuts = _manager.GetActulEventsByFiveMinuts();
-                var errorEvents = _manager.GetErrorEvents();
+                //_manager.RemoveOldEvents();
+                var eventsByFiveMinuts = _manager.GetActulEvents();
+                var errorEvents = _manager.GetErrors();
                 foreach (var station in stations)
                 {
                     var events = eventsByFiveMinuts.FindAll(e => string.Equals(e.Initiator, station?.Id, new StringComparison()));
@@ -590,6 +590,7 @@ namespace CityStations.Controllers
                 ViewData["HeightTablo"] = InformationTableViewModel?.Height ?? 0;
                 var eventId = Logger.WriteLog($"Поступил запрос от остановки с идентификатором {stationId} - {Station?.Name}",
                     stationId);
+                //CurrentRequestSituations.UpdateRequest(stationId,eventId);
                 return View();
             }
             catch (Exception e)

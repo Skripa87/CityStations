@@ -716,35 +716,26 @@ namespace CityStations
             }
         }
 
-        public List<Event> GetActulEventsByFiveMinuts()
+        public List<Event> GetActulEvents()
         {
             //var allEvents = GetEvents();
             //if (allEvents == null) return new List<Event>();
-            var currentDateTime = DateTime.Now;
-            var currentDateTimeBeforeFiveMinuts = currentDateTime.Subtract(TimeSpan.FromMinutes(5.0));
-            var actualEvents =
-                db.Events
-                  .Where(e => e.Date > currentDateTimeBeforeFiveMinuts && e.Date < currentDateTime);
-            return actualEvents.ToList();
+            //var currentDateTime = DateTime.Now;
+            //var currentDateTimeBeforeFiveMinuts = currentDateTime.Subtract(TimeSpan.FromMinutes(5.0));
+            //var actualEvents = 
+            //    db.Events
+            //      .Where(e => e.Date > currentDateTimeBeforeFiveMinuts && e.Date < currentDateTime);
+            //return actualEvents.ToList();
+            return db.Events
+                     .Take(50000)
+                     .ToList();
         }
-        public List<Event> GetErrorEvents()
+        public List<Event> GetErrors()
         {
             return db.Events
-                .Where(e => e.EventType == EventType.ERROR)
-                .ToList();
-        }
-
-        public List<Event> GetActulEventsByFiveMinutsForStation(string stationId)
-        {
-            //var allEvents = GetEvents();
-            //if (allEvents == null || string.IsNullOrEmpty(stationId)) return new List<Event>();
-            var currentDateTime = DateTime.Now;
-            var currentDateTimeBeforeFiveMinuts = currentDateTime.Subtract(TimeSpan.FromMinutes(5.0));
-            var actualEvents =
-                db.Events
-                  .Where(e => e.Date > currentDateTimeBeforeFiveMinuts && e.Date < currentDateTime)
-                  .ToList();
-            return actualEvents.FindAll(e=>string.Equals(e.Initiator,stationId,new StringComparison())) ?? new List<Event>();
+                     .Take(50000)
+                     .ToList()
+                     .FindAll(e => e.EventType == EventType.ERROR);
         }
     }
 }
