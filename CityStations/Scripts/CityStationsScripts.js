@@ -155,3 +155,10 @@ function setMaxHeightOnWrapperAfterLoadReloadWindow() {
         }
     }
 }
+
+function setClickCheckBoxOnlyActivateStations(ch) {
+    let button = document.getElementById("buttonSetSubmitOnSelectOnlyActivateStations");
+    if (button) {
+        button.click();
+        }
+}

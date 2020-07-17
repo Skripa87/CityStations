@@ -24,5 +24,6 @@ namespace CityStations.Models
         public DbSet<Content> Contents { get; set; }
         public DbSet<InformationTable> InformationTables { get; set; }
         public DbSet<Event> Events { get; set; }
+        public DbSet<UserOption> UserOptions { get; set; }
     }
 }

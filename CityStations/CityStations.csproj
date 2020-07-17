@@ -264,13 +264,16 @@
     <Compile Include="Models\PredictManager.cs" />
     <Compile Include="Models\Rain.cs" />
     <Compile Include="Models\ReservCityStationsDbContext.cs" />
+    <Compile Include="Models\SearchBlockPartViewModel.cs" />
     <Compile Include="Models\Station.cs" />
     <Compile Include="Models\StationForecast2020\ForecastItem.cs" />
     <Compile Include="Models\StationForecast2020\Root.cs" />
     <Compile Include="Models\StationModel.cs" />
     <Compile Include="Models\StationForecast.cs" />
+    <Compile Include="Models\StationModelViewModel.cs" />
     <Compile Include="Models\Sys.cs" />
     <Compile Include="Models\ContentViewModels.cs" />
+    <Compile Include="Models\UserOption.cs" />
     <Compile Include="Models\ViewDataContainer.cs" />
     <Compile Include="Models\Weather.cs" />
     <Compile Include="Models\WeatherCity.cs" />
@@ -301,6 +304,15 @@
     <Content Include="Content\Images\spec_bus.png" />
     <Content Include="Content\Images\trolleybus.png" />
     <Content Include="Content\Images\Ufa-flag.jpg" />
+    <Content Include="Content\Images\weatherIcons\01d.png" />
+    <Content Include="Content\Images\weatherIcons\02d.png" />
+    <Content Include="Content\Images\weatherIcons\03d.png" />
+    <Content Include="Content\Images\weatherIcons\04d.png" />
+    <Content Include="Content\Images\weatherIcons\09d.png" />
+    <Content Include="Content\Images\weatherIcons\10d.png" />
+    <Content Include="Content\Images\weatherIcons\11d.png" />
+    <Content Include="Content\Images\weatherIcons\13d.png" />
+    <Content Include="Content\Images\weatherIcons\50d.png" />
     <Content Include="css\style.css" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
@@ -607,6 +619,7 @@
     <Content Include="Scripts\popper-utils.min.js.map" />
     <Content Include="Scripts\popper-utils.js.map" />
     <Content Include="Views\Home\Monitoring.cshtml" />
+    <Content Include="Views\Home\SearchBlockPartBody.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

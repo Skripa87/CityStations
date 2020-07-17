@@ -1,4 +1,5 @@
-﻿<div class="row searchRow">
+﻿@using CityStations.Models
+<div class="row searchRow">
     @*@using (Ajax.BeginForm("SearchBlockPart", "Home", new { }, new AjaxOptions()
         {
             UpdateTargetId = "SearchBlockPartId",
@@ -13,7 +14,7 @@
             </span>
         }*@
     <div class="col-12 searchRow">
-        <div id="SearchBlockPartId">@Html.Partial("SearchBlockPart", new List<CityStations.Models.StationModel>())</div>
+        <div id="SearchBlockPartId">@Html.Partial("SearchBlockPart", ViewData["searchPart"] ?? new SearchBlockPartViewModel())</div>
     </div>
 </div>
 

@@ -1,0 +1,37 @@
+﻿@model List<CityStations.Models.StationModel>
+    <div id="tableContainer" class="table-responsive tableContainer">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" class="table table-bordered table-hover serch-stations scrollTable">
+            <thead class="fixedHeader">
+                <tr>
+                    <th class="th-header-table-1">#</th>
+                    <th class="th-header-table-2">Идентификатор</th>
+                    <th class="th-header-table-3">Наименование</th>
+                    <th class="th-header-table-4">Район</th>
+                    <th class="th-header-table-5">На карте</th>
+                    <th class="th-header-table-6">Описание</th>
+                    @*<th class="th-header-table-7">Контент</th>*@
+                    <th class="th-header-table-8">Правка</th>
+                </tr>
+            </thead>
+            <tbody id="tableBodyId" class="scrollContent">
+                @{
+                    var i = 1;
+                    foreach (var station in Model)
+                    {
+                        <tr class="variant" onclick="selectSearchResult('@station.Id', '@(station.Name + " " + station.Description)')">
+                            <th class="th-body-table-1">#@i</th>
+                            <th class="th-body-table-2">@station.Id</th>
+                            <th class="th-body-table-3">@(string.IsNullOrEmpty(station.NameOficial) ? station.Name+"(не офиц.)" : station.NameOficial)</th>
+                            <th class="th-body-table-4">@station.DistrictOfTheCity</th>
+                            <th class="th-body-table-5">Geo</th>
+                            <th class="th-body-table-6">@station.Description</th>
+                            @*<th class="th-body-table-7">@station.Contents</th>*@
+                            <th class="th-body-table-8">Red</th>
+                        </tr>
+                        i++;
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+

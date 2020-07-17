@@ -533,17 +533,17 @@ namespace CityStations
         public void SetIpAddressDevice(string stationId, string ipAddress)
         {
             if (string.IsNullOrEmpty(stationId)) return;
-            var station = db.Stations.Any(s => string.Equals(s.Id, stationId,new StringComparison()))
-                ? db.Stations.FirstOrDefault(s => string.Equals(s.Id, stationId, new StringComparison()))
+            var station = db.Stations.Any(s => string.Equals(s.Id, stationId))
+                ? db.Stations.FirstOrDefault(s => string.Equals(s.Id, stationId))
                 : null;
             if (station?.InformationTable == null) return;
             var informationTable = db.InformationTables
-                                     .Any(i => string.Equals(i.Id, station.InformationTable.Id, new StringComparison()))
+                                     .Any(i => string.Equals(i.Id, station.InformationTable.Id))
                                  ? db.InformationTables
-                                     .FirstOrDefault(i => string.Equals(i.Id, station.InformationTable.Id, new StringComparison()))
+                                     .FirstOrDefault(i => string.Equals(i.Id, station.InformationTable.Id))
                                  : null;
             if (informationTable == null) return;
-            informationTable.IpDevice = string.IsNullOrEmpty(informationTable.IpDevice) || !string.Equals(informationTable.IpDevice,ipAddress, new StringComparison()) 
+            informationTable.IpDevice = string.IsNullOrEmpty(informationTable.IpDevice) || !string.Equals(informationTable.IpDevice,ipAddress) 
                              ? ipAddress
                              :informationTable.IpDevice;
             try
@@ -571,10 +571,13 @@ namespace CityStations
                                  ? db.InformationTables
                                      .FirstOrDefault(i => i.Id == informationTableId)
                                  : null;
-            if (informationTable == null) return;
+            if (informationTable == null || newInformationTable == null) return;
             informationTable.HeightWithModule = newInformationTable.HeightWithModule;
             informationTable.RowCount = newInformationTable.RowCount;
             informationTable.WidthWithModule = newInformationTable.WidthWithModule;
+            informationTable.IpDevice = newInformationTable.IpDevice;
+            informationTable.PasswordDevice = newInformationTable.PasswordDevice;
+            informationTable.UserNameDevice = newInformationTable.UserNameDevice;
             try
             {
                 db.SaveChanges();
@@ -677,7 +680,7 @@ namespace CityStations
             var oldEvents = db.Events
                               .Where(e => e.Date < DateTime.Today && e.EventType != EventType.ERROR)
                               .ToList();
-            var partOldEvents = new List<Event>();
+            List<Event> partOldEvents;
             bool marker = false;
             while (true)
             {
@@ -686,7 +689,7 @@ namespace CityStations
                     partOldEvents = oldEvents.GetRange(0, 100000);
                     oldEvents.RemoveRange(0,100000);
                 }
-                catch (Exception exception)
+                catch (Exception)
                 {
                     var count = oldEvents.Count == 0 
                               ? 0
@@ -736,6 +739,74 @@ namespace CityStations
                      .Take(50000)
                      .ToList()
                      .FindAll(e => e.EventType == EventType.ERROR);
+        }
+
+        public UserOption GetUserOptions(string userId)
+        {
+            return db.UserOptions
+                     .Any(u => string.Equals(u.UserId, userId))
+                   ? db.UserOptions
+                       .FirstOrDefault(u => string.Equals(u.UserId, userId))
+                   : null;
+        }
+
+        public UserOption CreateUserOption(string userId, bool onlyActiveStation, bool groupByState, string selectedSortParametr)
+        {
+            var userOption = new UserOption()
+            {
+                UserId = userId,
+                OnlyActiveStations = onlyActiveStation,
+                GroupByState = groupByState,
+                SelectedSortParametrs = selectedSortParametr
+            };
+            db.UserOptions.Add(userOption);
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (System.Data.Entity.Validation.DbEntityValidationException dbEx)
+            {
+                Exception raise = dbEx;
+                foreach (var validationErrors in dbEx.EntityValidationErrors)
+                {
+                    foreach (var validationError in validationErrors.ValidationErrors)
+                    {
+                        string message = $"{validationErrors.Entry.Entity}:{validationError.ErrorMessage}";
+                        raise = new InvalidOperationException(message, raise);
+                    }
+                }
+            }
+            return userOption;
+        }
+
+        public void SaveUserOption(UserOption userOption)
+        {
+            if (userOption == null) return; 
+            var userOptionDb = db.UserOptions
+                                 .Any(u => string.Equals(userOption.UserId, u.UserId, new StringComparison()))
+                             ? db.UserOptions
+                                 .FirstOrDefault(u => string.Equals(userOption.UserId, u.UserId, new StringComparison()))
+                             : null;
+            if (userOptionDb == null) return;
+            userOptionDb.GroupByState = userOption.GroupByState;
+            userOptionDb.OnlyActiveStations = userOption.OnlyActiveStations;
+            userOptionDb.SelectedSortParametrs = userOption.SelectedSortParametrs;
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (System.Data.Entity.Validation.DbEntityValidationException dbEx)
+            {
+                Exception raise = dbEx;
+                foreach (var validationErrors in dbEx.EntityValidationErrors)
+                {
+                    foreach (var validationError in validationErrors.ValidationErrors)
+                    {
+                        string message = $"{validationErrors.Entry.Entity}:{validationError.ErrorMessage}";
+                        raise = new InvalidOperationException(message, raise);
+                    }
+                }
+            }
         }
     }
 }

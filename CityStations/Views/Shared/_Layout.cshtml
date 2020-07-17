@@ -28,8 +28,8 @@
             <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
                 <div class="navbar-brand-wrapper d-flex justify-content-center">
                     <div class="navbar-brand-inner-wrapper d-flex justify-content-between align-items-center w-100">
-                        <a class="navbar-brand brand-logo" href="@Url.Action("Index","Home",new { })"><img id="custom-navbar-brend" src="~/Content/Images/icons/icon-36x36.png" alt="logo" /> ГЕРОЛЬД</a>
-                        <a class="navbar-brand brand-logo-mini" href="@Url.Action("Index","Home",new { })"><img src="~/Content/Images/icons/icon-36x36.png" alt="logo" /></a>
+                        <a class="navbar-brand brand-logo" href="@Url.Action("IndexAuthtorize","Home",new { })"><img id="custom-navbar-brend" src="~/Content/Images/icons/icon-36x36.png" alt="logo" /> ГЕРОЛЬД</a>
+                        <a class="navbar-brand brand-logo-mini" href="@Url.Action("IndexAuthtorize","Home",new { })"><img src="~/Content/Images/icons/icon-36x36.png" alt="logo" /></a>
                         <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
                             <span class="mdi mdi-sort-variant"></span>
                         </button>
@@ -44,9 +44,9 @@
                                         <i class="mdi mdi-magnify"></i>
                                     </span>
                                 </div>
-                                @using (Ajax.BeginForm("SearchBlockPart", "Home", new { }, new AjaxOptions()
+                                @using (Ajax.BeginForm("SearchBlockPartBody", "Home", new { }, new AjaxOptions()
                                 {
-                                    UpdateTargetId = "wrapper",
+                                    UpdateTargetId = "searchBlockPartBodyId",
                                     HttpMethod = "POST",
                                     InsertionMode = InsertionMode.Replace
                                 }, new { style = "float:left;min-width:98%" }))
@@ -105,7 +105,7 @@
                 <nav class="sidebar sidebar-offcanvas" id="sidebar">
                     <ul class="nav">
                         <li class="nav-item">
-                            @using (Ajax.BeginForm("SearchBlockPart", "Home", new { searchBoxText = "onlyActivateStationAndNothingMore" }, new AjaxOptions()
+                            @using (Ajax.BeginForm("SearchBlockPart", "Home", new { }, new AjaxOptions()
                             {
                                 HttpMethod = "POST",
                                 UpdateTargetId = "wrapper",
@@ -115,25 +115,10 @@
                                 @Html.AntiForgeryToken();
                                 <button class="btn btn-link nav-link" type="submit">
                                     <i class="mdi mdi-home menu-icon"></i>
-                                    <span class="menu-title">Активные табло</span>
+                                    <span class="menu-title">Остановки города</span>
                                 </button>
                             }
 
-                        </li>
-                        <li class="nav-item">
-                            @using (Ajax.BeginForm("SearchBlockPart", "Home", new { searchBoxText = "" }, new AjaxOptions()
-                            {
-                                HttpMethod = "POST",
-                                UpdateTargetId = "wrapper",
-                                InsertionMode = InsertionMode.Replace
-                            }, new { @class = "simple" }))
-                            {
-                                @Html.AntiForgeryToken();
-                                <button class="btn btn-link nav-link" type="submit">
-                                    <i class="mdi mdi-view-headline menu-icon"></i>
-                                    <span class="menu-title">Перечень остановок</span>
-                                </button>
-                            }
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="@Url.Action("RebootAllStations","Home")">
@@ -148,6 +133,17 @@
                                 <button class="btn btn-link nav-link" type="submit">
                                     <i class="mdi mdi-home menu-icon"></i>
                                     <span class="menu-title">Мониторинг</span>
+                                </button>
+                            }
+                        </li>
+                        <li class="nav-item">
+                            @using (@Html.BeginForm("ReconfigurateAllDevice", "Home", FormMethod.Post))
+                            {
+                                //@Html.AntiForgeryToken();
+                                <input name="mode" value="normal" hidden />
+                                <button class="btn btn-link nav-link" type="submit">
+                                    <i class="mdi mdi-home menu-icon"></i>
+                                    <span class="menu-title">Переконфигурировать все</span>
                                 </button>
                             }
                         </li>

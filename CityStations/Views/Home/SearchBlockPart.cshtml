@@ -1,53 +1,40 @@
-﻿@model List<CityStations.Models.StationModel>
+﻿@using CityStations.Models
+@model CityStations.Models.SearchBlockPartViewModel
 <div class="card">
     <div class="card-header">
-        <h4 class="card-title">Информационные табло прибытия</h4>
-    </div>
-    <div class="card-body">
-        <div id="tableContainer" class="table-responsive tableContainer">
-            <table border="0" cellpadding="0" cellspacing="0" width="100%" class="table table-bordered table-hover serch-stations scrollTable">
-                <thead class="fixedHeader">
-                <tr>
-                    <th width="10%" >#</th>
-                    <th width="40%">Наименование остановки</th>
-                    <th width="20%">Направление</th>
-                    <th width="20%">Список контента</th>
-                    <th width="10%" >Активирована?</th>
-                </tr>
-                </thead>
-                <tbody id="tableBodyId" class="scrollContent">
-                @{
-                    var i = 1;
-                    foreach (var station in Model)
+        <div class="col-lg-12 col-12">
+            <div class="row">
+                <div class=" col-lg-12 col-12">
+                    <h4 class="card-title">Остановки города</h4>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-4 col-4 filter-block">
+                    @using (Ajax.BeginForm("SearchBlockPartBody", new AjaxOptions
                     {
-                        var str = station.Name + " " + station.Description;
-                        var contents = "";
-                        if (station?.InformationTable?.Contents != null)
-                        {
-                            foreach (var item in station.InformationTable.Contents)
-                            {
-                                contents += (item?.ContentType.ToString() + " " ?? "");
-                            }
-                        }
-                        <tr class="variant" onclick="selectSearchResult('@station.Id', '@str')">
-                            <th width="10%">#@i</th>
-                            <th width="40%">@station.Name</th>
-                            <th width="20%">@station.Description</th>
-                            <th width="20%">@contents</th>
-                            <th width="10%">
-                                @(station.Active == true
-                                    ? "Да"
-                                    : "Нет")
-                            </th>
-                        </tr>
-                        i++;
+                        HttpMethod = "POST",
+                        InsertionMode = InsertionMode.Replace,
+                        UpdateTargetId = "searchBlockPartBodyId"
+                    }))
+                    {
+                        @Html.AntiForgeryToken();
+                        <span><span class="filters-text">Только активные </span>@Html.CheckBox("onlyActive", Model?.OnlyActiveStations ?? false,new { onchange="setClickCheckBoxOnlyActivateStations(this)" })</span>
+                        <button id="buttonSetSubmitOnSelectOnlyActivateStations" type="submit" hidden ></button>
                     }
-                }
-                </tbody>
-            </table>
+                </div>
+                <div class="col-lg-4 col-4 filter-block">
+                    <p class="filters-text">Группировка по району</p>
+                </div>
+                <div class="col-lg-4 col-4 filter-block">
+                    <p class="filters-text">Сортировка по </p>
+                </div>
+            </div>
         </div>
     </div>
-    @using (Ajax.BeginForm("SelectStation", "Home", new {}, new AjaxOptions()
+    <div id="searchBlockPartBodyId" class="card-body">
+        @Html.Partial("SearchBlockPartBody", Model.StationModels ?? new List<StationModel>(), ViewData)
+    </div>
+    @using (Ajax.BeginForm("SelectStation", "Home", new { }, new AjaxOptions()
     {
         HttpMethod = "POST",
         UpdateTargetId = "wrapper",
@@ -57,7 +44,7 @@
     {
         @Html.AntiForgeryToken()
         <button id="selectStationButton" type="submit" hidden style="display: none;"></button>
-        <input id="selectStationId" name="stationId" type="text" value="" hidden/>
+        <input id="selectStationId" name="stationId" type="text" value="" hidden />
     }
 </div>
 

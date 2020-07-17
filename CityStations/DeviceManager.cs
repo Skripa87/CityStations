@@ -80,7 +80,7 @@ namespace CityStations
                     text.Add("Encoding=UTF-8");
                     text.Add("Name=Connect");
                     text.Add("Comment=Checks internet connectivity");
-                    text.Add($"Exec=/usr/bin/chromium-browser -incognito --noerrdialogs --kiosk http://92.50.187.210/test/Home/DisplayInformationTable?stationId={stationId}&accessCode={accessCode}");
+                    text.Add($"Exec=/usr/bin/chromium-browser -incognito --noerrdialogs --kiosk http://92.50.187.210/citystations/Home/DisplayInformationTable?stationId={stationId}&accessCode={accessCode}");
                     try
                     {
                         sftp.AppendAllLines(".config/autostart/chromium.desktop", text);
@@ -178,7 +178,7 @@ namespace CityStations
                     text.Add("Encoding=UTF-8");
                     text.Add("Name=Connect");
                     text.Add("Comment=Checks internet connectivity");
-                    text.Add($"Exec=/usr/bin/chromium-browser -incognito --noerrdialogs --kiosk http://92.50.187.210/test/Home/DisplayInformationTable?stationId={stationId}&accessCode={manager.SetAccessCode(stationId)}");
+                    text.Add($"Exec=/usr/bin/chromium-browser -incognito --noerrdialogs --kiosk http://92.50.187.210/citystations/Home/DisplayInformationTable?stationId={stationId}&accessCode={manager.SetAccessCode(stationId)}");
                     try
                     {
                         sftp.AppendAllLines(".config/autostart/chromium.desktop", text);

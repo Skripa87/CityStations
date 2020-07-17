@@ -63,8 +63,28 @@
                     </div>
                     <div class="col-4 ">
                         <input class="inputElements" name="ip" type="text" value="@(Model != null
-                                                                                              ? Model.IpAddress ?? ""
-                                                                                              : "")" />
+                                                                                      ? Model.IpAddress ?? ""
+                                                                                      : "")" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-8 ">
+                        <p>Имя пользователя:</p>
+                    </div>
+                    <div class="col-4 ">
+                        <input class="inputElements" name="userName" type="text" value="@(Model != null
+                                                                                      ? Model.UserName ?? ""
+                                                                                      : "")" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-8 ">
+                        <p>Пароль:</p>
+                    </div>
+                    <div class="col-4 ">
+                        <input class="inputElements" name="password" type="password" value="@(Model != null
+                                                                                      ? Model.Password ?? ""
+                                                                                      : "")" />
                     </div>
                 </div>
                 <div class="row">

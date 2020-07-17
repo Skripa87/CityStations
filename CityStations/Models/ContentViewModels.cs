@@ -205,9 +205,7 @@ namespace CityStations.Models
                     Precipation2 = "Переменная";
                     break;
             }
-            PrecipationIcon = "http://openweathermap.org/img/w/" + (weatherCity.weather.Any() 
-                                                                   ? $"{weatherCity.weather.FirstOrDefault()?.icon ?? ""}.png"
-                                                                   :"02d.png");
+            PrecipationIcon = $"~/../../Content/Images/weatherIcons/" + (weatherCity.weather.Any() ? $"{weatherCity.weather.FirstOrDefault()?.icon ?? ""}.png" :"01d.png");
         }
     }
 
@@ -418,11 +416,14 @@ namespace CityStations.Models
         public int HeightWithModules { get; set; }
         public int RowCount { get; set; }
         public string IpAddress { get; set; }
+        public string UserName { get; set; }
+        public string Password { get; set; }
         public List<ContentOption> ContentOptions { get; set; }
         public ContentAddViewModel ContentAddViewModel { get; set; }
 
         public OptionsViewModel(StationModel station, List<ModuleType> moduleTypes, List<ContentType> contentTypes, string selectedModuleTypeId)
         {
+            if (station == null) return; 
             ContentAddViewModel = new ContentAddViewModel(station.Id, new Content()
             {
                 Id = Guid.NewGuid()
@@ -442,6 +443,8 @@ namespace CityStations.Models
             RowCount = station.InformationTable
                               ?.RowCount ?? 0;
             IpAddress = station.InformationTable?.IpDevice ?? "";
+            UserName = station.InformationTable?.UserNameDevice ?? "";
+            Password = station.InformationTable?.PasswordDevice ?? "";
             var list = new List<SelectListItem>();
             foreach (var item in moduleTypes)
             {

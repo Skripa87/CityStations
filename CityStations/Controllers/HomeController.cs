@@ -26,6 +26,7 @@ namespace CityStations.Controllers
                 _contentTypes = Enum.GetValues(typeof(ContentType))
                                     .Cast<ContentType>()
                                     .ToList();
+                _stations = _manager.GetStations();
             }
             catch (Exception e)
             {
@@ -37,6 +38,7 @@ namespace CityStations.Controllers
         }
 
         private ContextManager _manager;
+        private static List<StationModel> _stations;
 
         private static string _selectedModuleTypeId;
 
@@ -48,16 +50,21 @@ namespace CityStations.Controllers
         private static OptionsViewModel OptionsViewModel { get; set; }
         private static ContentAddViewModel ContentAddViewModel { get; set; }
         private static InformationTableViewModel InformationTableViewModel { get; set; }
+        private static UserOption CurrentUserOption { get; set; }
 
         [HttpGet]
         public ActionResult Index()
         {
             ViewData["MyAcc"] = User?.Identity
                                     ?.Name == "skripinalexey1987@gmail.com";
+            if (User != null)
+            {
+                return RedirectToAction("IndexAuthtorize");
+            }
             return View();
         }
 
-        [HttpGet]
+        [HttpPost]
         [Authorize]
         public ActionResult ReconfigurateAllDevice()
         {
@@ -82,20 +89,51 @@ namespace CityStations.Controllers
             Logger.WriteLog($"Пользователь {User?.Identity?.GetUserName() ?? "Не определеный пользователь"} зашел в систему!", User?.Identity?.GetUserId() ?? "HomeController");
             ViewData["MyAcc"] = User?.Identity
                                     ?.Name == "skripinalexey1987@gmail.com";
+            var userId = User?.Identity?.GetUserId() ?? "";
             _manager = new ContextManager();
-            _manager.CheckAllAccessCodeInInformationTable();
+            CurrentUserOption = (CurrentUserOption ?? _manager.GetUserOptions(userId)) 
+                                                   ?? _manager.CreateUserOption(userId,false,false,"");
+            var stations = _stations ?? _manager.GetStations();
+            var searchPart = new SearchBlockPartViewModel(CurrentUserOption.OnlyActiveStations,
+                                                          CurrentUserOption.GroupByState,
+                                                          stations,
+                                                          CurrentUserOption.SelectedSortParametrs);
+            ViewData["searchPart"] = searchPart;
+            //_manager.CheckAllAccessCodeInInformationTable();
             return View();
         }
 
         [Authorize]
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public PartialViewResult SearchBlockPart(string searchBoxText)
+        public PartialViewResult SearchBlockPart()
         {
             _manager = new ContextManager();
-            return string.Equals(searchBoxText, "onlyActivateStationAndNothingMore", new StringComparison())
-                         ? PartialView(_manager.GetActivStationsAsync().Result)
-                         : PartialView(_manager.FindStationOnNamePartAsync(searchBoxText).Result);
+            var userOption = _manager.GetUserOptions(User.Identity
+                                                         .GetUserId())  
+                          ?? _manager.CreateUserOption(User.Identity
+                                                           .GetUserId(), false, false, "");
+            var stations = _stations ?? _manager.GetStations();
+            var model = new SearchBlockPartViewModel(userOption.OnlyActiveStations, userOption.GroupByState, stations,
+                                                     userOption.SelectedSortParametrs);
+            return PartialView(model);
+        }
+
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public PartialViewResult SearchBlockPartBody(string searchBoxText, bool onlyActive = false)
+        {
+            _manager = new ContextManager();
+            return onlyActive
+                ? PartialView(_manager.GetActivStationsAsync().Result)
+                : PartialView(_manager.FindStationOnNamePartAsync(searchBoxText).Result);
+            //var model = new List<StationModelViewModel>();
+            //foreach (var station in stations)
+            //{
+            //    model.Add(new StationModelViewModel(station));
+            //}
+            //return PartialView(model);
         }
 
         [Authorize]
@@ -150,19 +188,24 @@ namespace CityStations.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public PartialViewResult SaveChangeOptions(string stationId, string informationTableId, int widthWithModules = 0, int heightWithModules = 0,
-                                                   int rowCount = 0, int timeOutPredictShow = 0, string ip = "")
+                                                   int rowCount = 0, int timeOutPredictShow = 0, string ip = "", string userName = "", string password = "")
         {
             try
             {
+                _stations.RemoveAll(s => string.Equals(s.Id, stationId, new StringComparison()));
                 var contextManager = new ContextManager();
-                contextManager.SetIpAddressDevice(stationId, ip);
+                //contextManager.SetIpAddressDevice(stationId, ip);
                 contextManager.ChangeInformationTable(informationTableId, new InformationTable()
                 {
                     HeightWithModule = heightWithModules,
                     RowCount = rowCount,
-                    WidthWithModule = widthWithModules
+                    WidthWithModule = widthWithModules,
+                    UserNameDevice = userName,
+                    PasswordDevice = password,
+                    IpDevice =  ip
                 });
                 var station = contextManager.GetStation(stationId);
+                _stations.Add(station);
                 _selectedModuleTypeId = station?.InformationTable
                                             ?.ModuleType
                                             ?.Id ?? "0";
@@ -249,7 +292,9 @@ namespace CityStations.Controllers
             try
             {
                 _manager = new ContextManager();
+                _stations.RemoveAll(s => string.Equals(s.Id, stationId, new StringComparison()));
                 var station = _manager.ActivateInformationTable(stationId);
+                _stations.Add(station);
                 _moduleTypes = _manager.GetModuleTypes();
                 Station = new StationViewModel(station, _moduleTypes, _contentTypes,
                     (_moduleTypes?.FirstOrDefault()?.Id ?? ""));
@@ -277,7 +322,9 @@ namespace CityStations.Controllers
             try
             {
                 _manager = new ContextManager();
+                _stations.RemoveAll(s => string.Equals(s.Id, stationId, new StringComparison()));
                 var station = _manager.DeactivateInformationTable(stationId);
+                _stations.Add(station);
                 Station = new StationViewModel(station, _moduleTypes, _contentTypes, _selectedModuleTypeId);
                 Logger.WriteLog(
                     $"Пользователь {User.Identity.GetUserId()} выполнил деактивацию информационного табло на остановке с идетнитификатором {stationId}",
@@ -307,7 +354,9 @@ namespace CityStations.Controllers
                 TimeOut = model.TimeOut
             };
             _manager.CreateContent(stationId, content);
+            _stations.RemoveAll(s => string.Equals(s.Id, stationId, new StringComparison()));
             var station = _manager.GetStation(stationId);
+            _stations.Add(station);
             var sModuleType = station?.InformationTable
                                      ?.ModuleType?.Id ?? "";
             OptionsViewModel = new OptionsViewModel(station, _moduleTypes, _contentTypes, sModuleType);
@@ -435,8 +484,10 @@ namespace CityStations.Controllers
             try
             {
                 _manager = new ContextManager();
+                _stations.RemoveAll(s => string.Equals(s.Id, stationId, new StringComparison()));
                 _manager.RemoveContent(stationId, contentId);
                 var station = _manager.GetStation(stationId);
+                _stations.Add(station);
                 Station = new StationViewModel(station, _moduleTypes, _contentTypes, _selectedModuleTypeId);
                 OptionsAndPreviewViewModel = Station?.OptionsAndPreviewModel;
                 OptionsViewModel = Station?.OptionsAndPreviewModel?.Options;
@@ -464,9 +515,11 @@ namespace CityStations.Controllers
         {
             var deviceManager = new DeviceManager();
             if (string.IsNullOrEmpty(ip)) return PartialView("SelectStation", Station);
+            _stations.RemoveAll(s => string.Equals(s.Id, stationId, new StringComparison()));
             deviceManager.ConfigurateDevice(ip, stationId);
             _manager = new ContextManager();
             var station = _manager.GetStation(stationId);
+            _stations.Add(station);
             Station = new StationViewModel(station, _moduleTypes, _contentTypes, _selectedModuleTypeId);
             OptionsAndPreviewViewModel = Station?.OptionsAndPreviewModel;
             InformationTableViewModel = OptionsAndPreviewViewModel?.InformationTablePreview;
@@ -588,7 +641,7 @@ namespace CityStations.Controllers
                     (((Station?.OptionsAndPreviewModel?.InformationTablePreview?.Height ?? 0) / 2) - 10) + "px";
                 ViewData["WidthTablo"] = InformationTableViewModel?.Width ?? 0;
                 ViewData["HeightTablo"] = InformationTableViewModel?.Height ?? 0;
-                var eventId = Logger.WriteLog($"Поступил запрос от остановки с идентификатором {stationId} - {Station?.Name}",
+                Logger.WriteLog($"Поступил запрос от остановки с идентификатором {stationId} - {Station?.Name}",
                     stationId);
                 //CurrentRequestSituations.UpdateRequest(stationId,eventId);
                 return View();
@@ -790,8 +843,9 @@ namespace CityStations.Controllers
             var text = "Уважаемые пасажиры!" + '\n';
             if (!isNewService)
             {
-                foreach (StationForecast item in predictNotObject)
+                foreach (var forecast in predictNotObject)
                 {
+                    var item = (StationForecast) forecast;
                     var time = item.Arrt != null
                         ? (((int) item.Arrt / 60) == 0 ? "1" : ((int) item.Arrt / 60).ToString())
                         : "";
@@ -866,8 +920,9 @@ namespace CityStations.Controllers
             }
             else
             {
-                foreach (ForecastsItem item in predictNotObject)
+                foreach (var forecast in predictNotObject)
                 {
+                    var item = (ForecastsItem) forecast;
                     var time = item.arrTime != null
                         ? (((int)item.arrTime / 60) == 0 ? "1" : ((int)item.arrTime / 60).ToString())
                         : "";
@@ -988,8 +1043,9 @@ namespace CityStations.Controllers
             var text = "Уважаемые пасажиры!" + '\n';
             if (isNewService)
             {
-                foreach (StationForecast item in predictNotObject)
+                foreach (var forecast in predictNotObject)
                 {
+                    var item = (StationForecast) forecast;
                     var time = item.Arrt != null
                         ? (((int) item.Arrt / 60) == 0 ? "1" : ((int) item.Arrt / 60).ToString())
                         : "";
@@ -1066,8 +1122,9 @@ namespace CityStations.Controllers
             }
             else
             {
-                foreach (ForecastsItem item in predictNotObject)
+                foreach (var forecast in predictNotObject)
                 {
+                    var item = (ForecastsItem) forecast;
                     var time = item.arrTime != null
                         ? (((int)item.arrTime / 60) == 0 ? "1" : ((int)item.arrTime / 60).ToString())
                         : "";
