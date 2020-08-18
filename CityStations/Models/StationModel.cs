@@ -2,7 +2,7 @@
 
 namespace CityStations.Models
 {
-    public class StationModel
+    public class StationModel : IComparable
     {
         public string Id { get; set; }
         public string IdForRnis { get; set; }
@@ -40,5 +40,14 @@ namespace CityStations.Models
             Type = string.Equals(station.type,"1");
             Active = false;
         }
+
+        public int CompareTo(object obj)
+        {
+            return obj == null
+                ? -1
+                : (string.CompareOrdinal(
+                    $"{(string.IsNullOrEmpty(NameOficial) ? Name : NameOficial)} {Description}".ToUpperInvariant(),
+                    ($"{(string.IsNullOrEmpty(((StationModel) obj).NameOficial) ? ((StationModel) obj).Name : ((StationModel) obj).NameOficial)} {Description}".ToUpperInvariant())));
+    }
     }      
 }

@@ -66,11 +66,17 @@ namespace CityStations.Controllers
 
         [HttpPost]
         [Authorize]
-        public ActionResult ReconfigurateAllDevice()
+        public ActionResult MassiveConfigure()
         {
-            var devManager = new DeviceManager();
-            devManager.ConfigurateAllDevice();
-            return RedirectToAction("IndexAuthtorize");
+            var model = new List<MassiveConfigureDevicePart>();
+            var manager = new ContextManager();
+            var stations = manager.GetActivStations();
+            foreach (var station in stations)
+            {
+                model.Add(new MassiveConfigureDevicePart(station));
+            }
+            model.Sort();
+            return View(model);
         }
 
         [HttpGet]
@@ -122,18 +128,17 @@ namespace CityStations.Controllers
         [Authorize]
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public PartialViewResult SearchBlockPartBody(string searchBoxText, bool onlyActive = false)
+        public async Task<PartialViewResult> SearchBlockPartBody(string searchBoxText, bool onlyActive = false)
         {
             _manager = new ContextManager();
-            return onlyActive
-                ? PartialView(_manager.GetActivStationsAsync().Result)
-                : PartialView(_manager.FindStationOnNamePartAsync(searchBoxText).Result);
-            //var model = new List<StationModelViewModel>();
-            //foreach (var station in stations)
-            //{
-            //    model.Add(new StationModelViewModel(station));
-            //}
-            //return PartialView(model);
+            var stations = onlyActive
+         ? await _manager.FindActiveStationOnNamePartAsync(searchBoxText)
+                         .ConfigureAwait(true)
+
+         : await _manager.FindStationOnNamePartAsync(searchBoxText)
+                         .ConfigureAwait(true);
+            stations.Sort();
+            return PartialView(stations);
         }
 
         [Authorize]
@@ -292,14 +297,11 @@ namespace CityStations.Controllers
             try
             {
                 _manager = new ContextManager();
-                _stations.RemoveAll(s => string.Equals(s.Id, stationId, new StringComparison()));
                 var station = _manager.ActivateInformationTable(stationId);
-                _stations.Add(station);
                 _moduleTypes = _manager.GetModuleTypes();
-                Station = new StationViewModel(station, _moduleTypes, _contentTypes,
-                    (_moduleTypes?.FirstOrDefault()?.Id ?? ""));
+                Station = new StationViewModel(station, _moduleTypes, _contentTypes,(_moduleTypes?.FirstOrDefault()?.Id ?? ""));
                 InformationTableViewModel = Station?.OptionsAndPreviewModel
-                    ?.InformationTablePreview;
+                                                   ?.InformationTablePreview;
                 _manager = null;
                 Logger.WriteLog(
                     $"На остановочном павильоне {Station.Name}, выполнена активация информационного табло, идентификатор = {Station.StationId}",
@@ -516,9 +518,9 @@ namespace CityStations.Controllers
             var deviceManager = new DeviceManager();
             if (string.IsNullOrEmpty(ip)) return PartialView("SelectStation", Station);
             _stations.RemoveAll(s => string.Equals(s.Id, stationId, new StringComparison()));
-            deviceManager.ConfigurateDevice(ip, stationId);
             _manager = new ContextManager();
             var station = _manager.GetStation(stationId);
+            deviceManager.ConfigurateDevice(station);
             _stations.Add(station);
             Station = new StationViewModel(station, _moduleTypes, _contentTypes, _selectedModuleTypeId);
             OptionsAndPreviewViewModel = Station?.OptionsAndPreviewModel;
@@ -1214,6 +1216,18 @@ namespace CityStations.Controllers
             var response = await client.PostAsync("https://tts.api.cloud.yandex.net/speech/v1/tts:synthesize", content);
             var resultstream = (MemoryStream)await response.Content.ReadAsStreamAsync();
             return new FileStreamResult(resultstream, "application / ogg");
+        }
+
+        [Authorize]
+        [HttpPost]
+        public ActionResult MassiveConfigureStart(List<string> isChecked)
+        {
+            var deviceManager = new DeviceManager();
+            var contextManager = new ContextManager();
+            var activeStations = contextManager.GetActivStations();
+            var stations = activeStations.FindAll(s => isChecked.Contains(s.Id));
+            deviceManager.ConfigureDevices(stations);
+            return View("MassiveConfigure");
         }
     }
 }

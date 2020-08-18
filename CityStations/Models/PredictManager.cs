@@ -66,14 +66,14 @@ namespace CityStations.Models
                 {
                     var jResult = JToken.Parse(result).ToObject<IEnumerable<StationForecast>>()
                         .ToList();
-                    jResult.RemoveAll(j => j.Arrt < 20 || j.Arrt > 1201);
+                    jResult.RemoveAll(j => j.Arrt > 1201);
                     return jResult;
                 }
                 else
                 {
                     var jResult = JToken.Parse(result).ToObject<Root>();
                     if(jResult == null) return new List<IForecast>();
-                    jResult.forecasts.RemoveAll(j => j.arrTime < 20 || j.arrTime > 1201);
+                    jResult.forecasts.RemoveAll(j => j.arrTime > 1201);
                     return jResult.forecasts;
                 }
             }

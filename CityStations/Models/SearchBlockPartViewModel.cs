@@ -14,13 +14,7 @@ namespace CityStations.Models
         {
             StationModels = new List<StationModel>();
             StationModels.AddRange(stations);
-            //if (stations != null)
-            //{
-            //    foreach (var station in stations)
-            //    {
-            //        StationModels.Add(new StationModel(station));
-            //    }
-            //}
+            StationModels.Sort();
             var variants = new List<string> {"#", "Идентификатор", "Наименование", "Район", "Контент"};
             SortVariableList = new SelectList(variants,selectedItem);
             OnlyActiveStations = onlyActiveStations;

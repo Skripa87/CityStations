@@ -31,6 +31,38 @@ namespace CityStations
                      .ToList();
         }
 
+        public StationModel ChangePassword(StationModel station, string password)
+        {
+            if (station == null) return null;
+            var informationTable = db.InformationTables
+                                     .Any(i => string.Equals(i.Id, station.InformationTable.Id))
+                                 ? db.InformationTables
+                                     .FirstOrDefault(i=>string.Equals(i.Id,station.InformationTable.Id))
+                                 :null;
+            if (informationTable == null) return null;
+            informationTable.PasswordDevice = password;
+            try
+            {
+                db.SaveChanges();
+                return db.Stations.FirstOrDefault(s => string.Equals(s.Id, station.Id));
+            }
+            catch (System.Data.Entity.Validation.DbEntityValidationException dbEx)
+            {
+                Exception raise = dbEx;
+                foreach (var validationErrors in dbEx.EntityValidationErrors)
+                {
+                    foreach (var validationError in validationErrors.ValidationErrors)
+                    {
+                        string message = $"{validationErrors.Entry.Entity}:{validationError.ErrorMessage}";
+                        // raise a new exception nesting
+                        // the current instance as InnerException
+                        raise = new InvalidOperationException(message, raise);
+                    }
+                }
+            }
+            return null;
+        }
+
         public string CreateEvent(string msg, string initiator)
         {
             if (string.IsNullOrEmpty(msg))
@@ -126,9 +158,9 @@ namespace CityStations
                         : null;
             if (station?.InformationTable == null) return null;
             var informationTable = db.InformationTables
-                                     .Any(i => string.Equals(i.Id, station.InformationTable.Id, new StringComparison()))
+                                     .Any(i => string.Equals(i.Id, station.InformationTable.Id))
                                  ? db.InformationTables
-                                     .FirstOrDefault(i => string.Equals(i.Id, station.InformationTable.Id, new StringComparison()))
+                                     .FirstOrDefault(i => string.Equals(i.Id, station.InformationTable.Id))
                                  : null;
             if (informationTable == null) return null;
             var accessCode = string.IsNullOrEmpty(informationTable.AccessCode)
@@ -221,11 +253,56 @@ namespace CityStations
 
         }
 
+        public async Task<List<StationModel>> FindActiveStationOnNamePartAsync(string finderString)
+        {
+            if (string.IsNullOrEmpty(finderString)) return db.Stations
+                                                             .Any(s=>s.Active)
+                                                   ? await db.Stations
+                                                             .Where(s=>s.Active)
+                                                             .ToListAsync()
+                                                             .ConfigureAwait(true)
+                                                   : null;
+            var normalFinderString = finderString.Trim(' ')
+                                                 .ToUpperInvariant();
+            var stations = db.Stations
+                             .Any(s=>s.Active)
+                         ? await db.Stations
+                                   .ToListAsync()
+                                   .ConfigureAwait(true)
+                         : null;
+            return stations != null 
+                 ?( stations.Any(s => s.Name
+                                         .Trim(' ')
+                                         .ToUpperInvariant()
+                                         .Contains(normalFinderString)
+                                     || normalFinderString.Contains(s.Name
+                                         .Trim(' ')
+                                         .ToUpperInvariant()))
+                ? stations
+                    .FindAll(s => s.Name
+                                      .Trim(' ')
+                                      .ToUpperInvariant()
+                                      .Contains(normalFinderString)
+                                  || normalFinderString.Contains(s.Name
+                                      .Trim(' ')
+                                      .ToUpperInvariant()))
+                : stations.FindAll(
+                    s => s.Name
+                             .Trim(' ')
+                             .ToUpperInvariant()
+                             .Contains(normalFinderString.Substring(0, normalFinderString.Length / 2))
+                         || normalFinderString.Contains(s.Name
+                             .Trim(' ')
+                             .ToUpperInvariant())))
+                 : new List<StationModel>();
+        }
+
+
         public async Task<List<StationModel>> FindStationOnNamePartAsync(string finderString)
         {
             if (string.IsNullOrEmpty(finderString)) return await db.Stations
                                                                    .ToListAsync()
-                                                                   .ConfigureAwait(false);
+                                                                   .ConfigureAwait(true);
             var normalFinderString = finderString.Trim(' ')
                 .ToUpperInvariant();
             var stations = db.Stations.ToList();
@@ -622,10 +699,16 @@ namespace CityStations
                 defaultInformationTable = new InformationTable()
                 {
                     Id = Guid.NewGuid()
-                                 .ToString(),
-                    HeightWithModule = 0,
-                    WidthWithModule = 0,
-                    RowCount = 0
+                             .ToString(),
+                    AccessCode = Guid.NewGuid()
+                                     .ToString(),
+                    ServiceType = 0,
+                    PasswordDevice = "",
+                    IpDevice = "",
+                    UserNameDevice = "",
+                    HeightWithModule = 2,
+                    WidthWithModule = 4,
+                    RowCount = 4
                 };
                 defaultInformationTable.Contents
                                        .Add(defaultContent);
@@ -647,10 +730,10 @@ namespace CityStations
                     }
                 }
                 var informationTable = db.InformationTables
-                    .Any(i => string.Equals(i.Id, defaultInformationTable.Id))
-                    ? db.InformationTables
-                        .FirstOrDefault(i => string.Equals(i.Id, defaultInformationTable.Id))
-                    : null;
+                                         .Any(i => string.Equals(i.Id, defaultInformationTable.Id))
+                                     ? db.InformationTables
+                                         .FirstOrDefault(i => string.Equals(i.Id, defaultInformationTable.Id))
+                                     : null;
                 if (informationTable == null) return null;
                 informationTable.ModuleType = moduleType;
                 station.InformationTable = informationTable;

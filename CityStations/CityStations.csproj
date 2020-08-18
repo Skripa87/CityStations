@@ -258,6 +258,7 @@
     <Compile Include="Models\JsonClassRnisService\GetTransportByCheckPoint\Type.cs" />
     <Compile Include="Models\Main.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
+    <Compile Include="Models\MassiveConfigureDevicePart.cs" />
     <Compile Include="Models\ModuleType.cs" />
     <Compile Include="Models\MonitoringViewModel.cs" />
     <Compile Include="Models\Predict.cs" />
@@ -620,6 +621,7 @@
     <Content Include="Scripts\popper-utils.js.map" />
     <Content Include="Views\Home\Monitoring.cshtml" />
     <Content Include="Views\Home\SearchBlockPartBody.cshtml" />
+    <Content Include="Views\Home\MassiveConfigure.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -674,7 +676,7 @@
           <SaveServerSettingsInUserFile>True</SaveServerSettingsInUserFile>
         </WebProjectProperties>
       </FlavorProperties>
-      <UserProperties content_4bootstrap_1min_1css_1map__JsonSchema="" libman_1json__JsonSchema="" />
+      <UserProperties libman_1json__JsonSchema="" content_4bootstrap_1min_1css_1map__JsonSchema="" />
     </VisualStudio>
   </ProjectExtensions>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

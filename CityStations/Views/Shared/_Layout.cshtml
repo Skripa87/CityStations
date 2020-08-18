@@ -44,7 +44,7 @@
                                         <i class="mdi mdi-magnify"></i>
                                     </span>
                                 </div>
-                                @using (Ajax.BeginForm("SearchBlockPartBody", "Home", new { }, new AjaxOptions()
+                                @using (Ajax.BeginForm("SearchBlockPartBody", "Home", new { },new AjaxOptions()
                                 {
                                     UpdateTargetId = "searchBlockPartBodyId",
                                     HttpMethod = "POST",
@@ -52,7 +52,7 @@
                                 }, new { style = "float:left;min-width:98%" }))
                                 {
                                     @Html.AntiForgeryToken()
-                                    <input id="searchBoxId" name="searchBoxText" type="search" class="form-control" placeholder="Поиск..." aria-label="search" aria-describedby="search" value="" onkeyup="findstart()">
+                                    <input id="searchBoxId" name="searchBoxText" type="search" class="form-control" placeholder="Поиск..." aria-label="search" aria-describedby="search" value="" onkeyup="findstart(event)">
                                     <button id="searchBoxButton" type="submit" class="btn btn-default" hidden>Найти</button>
                                 }
                             </div>
@@ -137,13 +137,13 @@
                             }
                         </li>
                         <li class="nav-item">
-                            @using (@Html.BeginForm("ReconfigurateAllDevice", "Home", FormMethod.Post))
+                            @using (@Html.BeginForm("MassiveConfigure", "Home", FormMethod.Post))
                             {
                                 //@Html.AntiForgeryToken();
                                 <input name="mode" value="normal" hidden />
                                 <button class="btn btn-link nav-link" type="submit">
                                     <i class="mdi mdi-home menu-icon"></i>
-                                    <span class="menu-title">Переконфигурировать все</span>
+                                    <span class="menu-title">Сетевые настройки</span>
                                 </button>
                             }
                         </li>

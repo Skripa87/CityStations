@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.NetworkInformation;
 using System.Text;
 using CityStations.Models;
 using Renci.SshNet;
@@ -23,14 +24,30 @@ namespace CityStations
             }
         }
 
-        public void ConfigurateAllDevice()
+        public void ConfigureDevices(IEnumerable<StationModel> stations)
         {
-            var manager = new ContextManager();
-            var stations = manager.GetActivStations();
+            if (stations == null) return;
             foreach (var station in stations)
             {
                 if (string.IsNullOrEmpty(station.InformationTable.IpDevice)) continue;
-                ConfigurateDevice(station);
+                try
+                {
+                    ConfigurateDevice(station);
+                }
+                catch(SshAuthenticationException authexception)
+                {
+                    continue;
+                }
+            }
+        }
+
+        private bool CheckPingDevice(string ipAddress)
+        {
+            using (var ping = new Ping())
+            {
+                var timeout = 120;
+                var reply = ping.Send(ipAddress, timeout);
+                return reply.Status == IPStatus.Success;
             }
         }
 
@@ -51,8 +68,22 @@ namespace CityStations
                 {
                     ssh.Connect();
                 }
-                catch (SshConnectionException ex)
+                catch (Exception ex)
                 {
+                    var manager = new ContextManager();
+                    if (CheckPingDevice(ipAddressDevice))
+                    {
+                        StationModel newStation = null;
+                        if (string.Equals(station.InformationTable.PasswordDevice, "$olnechniKrug2019"))
+                        {
+                            newStation = manager.ChangePassword(station, "$olnechniKrug");
+                        }
+                        else
+                        {
+                            newStation = manager.ChangePassword(station, "$olnechniKrug2019");
+                        }
+                        ConfigurateDevice(newStation);
+                    }
                     Logger.WriteLog($"Произошла ошибка при попытки соеденения {ex.Message}, подробности {ex.StackTrace}", "ConfigurateDevice");
                     return;
                 }
@@ -143,92 +174,125 @@ namespace CityStations
             UserName = station?.InformationTable?.UserNameDevice;
             Password = station?.InformationTable?.PasswordDevice;
             if (string.IsNullOrEmpty(UserName) || string.IsNullOrEmpty(Password)) return;
-            using (var ssh = new SshClient(ipAddressDevice, UserName, Password))
+            try
             {
-                try
-                {
-                    ssh.Connect();
-                }
-                catch (SshConnectionException ex)
-                {
-                    Logger.WriteLog($"Произошла ошибка при попытки соеденения {ex.Message}, подробности {ex.StackTrace}", "ConfigurateDevice");
-                    return;
-                }
-                var command = ssh.CreateCommand("ls .config/autostart", Encoding.UTF8);
-                command.Execute();
-                var answer = command.Result;
-                if (answer.Contains("chromium.desktop\n"))
-                {
-                    command = ssh.CreateCommand("rm -f .config/autostart/chromium.desktop\n");
-                    command.Execute();
-                }
-                using (var sftp = new SftpClient(ipAddressDevice, UserName, Password))
+                using (var ssh = new SshClient(ipAddressDevice, UserName, Password))
                 {
                     try
                     {
-                        sftp.Connect();
+                        ssh.Connect();
                     }
                     catch (SshConnectionException ex)
                     {
-                        Logger.WriteLog($"Произошла ошибка при попытки соеденения {ex.Message}, подробности {ex.StackTrace}", "ConfigurateDevice");
+                        Logger.WriteLog(
+                            $"Произошла ошибка при попытки соеденения {ex.Message}, подробности {ex.StackTrace}",
+                            "ConfigurateDevice");
                         return;
                     }
-                    var text = new List<string>();
-                    text.Add("[Desktop Entry]");
-                    text.Add("Encoding=UTF-8");
-                    text.Add("Name=Connect");
-                    text.Add("Comment=Checks internet connectivity");
-                    text.Add($"Exec=/usr/bin/chromium-browser -incognito --noerrdialogs --kiosk http://92.50.187.210/citystations/Home/DisplayInformationTable?stationId={stationId}&accessCode={manager.SetAccessCode(stationId)}");
-                    try
+
+                    var command = ssh.CreateCommand("ls .config/autostart", Encoding.UTF8);
+                    command.Execute();
+                    var answer = command.Result;
+                    if (answer.Contains("chromium.desktop\n"))
                     {
-                        sftp.AppendAllLines(".config/autostart/chromium.desktop", text);
+                        command = ssh.CreateCommand("rm -f .config/autostart/chromium.desktop\n");
+                        command.Execute();
                     }
-                    catch (SftpPermissionDeniedException ex)
+
+                    using (var sftp = new SftpClient(ipAddressDevice, UserName, Password))
                     {
-                        Logger.WriteLog($"Произошла ошибка при попытки создания файлов {ex.Message}, подробности {ex.StackTrace}", "ConfigurateDevice");
-                        if (!ssh.IsConnected) ssh.Connect();
-                        command = ssh.CreateCommand("sudo rm -f -r .config/autostart\n");
                         try
                         {
-                            command.Execute();
+                            sftp.Connect();
                         }
-                        catch (SshException sshex)
+                        catch (SshConnectionException ex)
                         {
-                            Logger.WriteLog($"Произошла ошибка при попытки удаления папки {ex.Message}, подробности {ex.StackTrace}", "ConfigurateDevice");
+                            Logger.WriteLog(
+                                $"Произошла ошибка при попытки соеденения {ex.Message}, подробности {ex.StackTrace}",
+                                "ConfigurateDevice");
                             return;
                         }
-                        command = ssh.CreateCommand("mkdir .config/autostart\n");
-                        try
-                        {
-                            command.Execute();
-                        }
-                        catch (SshException sshexep)
-                        {
-                            Logger.WriteLog($"Произошла ошибка при попытки создания папки {ex.Message}, подробности {ex.StackTrace}", "ConfigurateDevice");
-                            return;
-                        }
+
+                        var text = new List<string>();
+                        text.Add("[Desktop Entry]");
+                        text.Add("Encoding=UTF-8");
+                        text.Add("Name=Connect");
+                        text.Add("Comment=Checks internet connectivity");
+                        text.Add(
+                            $"Exec=/usr/bin/chromium-browser -incognito --noerrdialogs --kiosk http://92.50.187.210/citystations/Home/DisplayInformationTable?stationId={stationId}&accessCode={manager.SetAccessCode(stationId)}");
                         try
                         {
                             sftp.AppendAllLines(".config/autostart/chromium.desktop", text);
                         }
-                        catch (SftpPermissionDeniedException sftpError)
+                        catch (SftpPermissionDeniedException ex)
                         {
-                            Logger.WriteLog($"Произошла ошибка при попытки добавления данных в файл {ex.Message}, подробности {ex.StackTrace}", "ConfigurateDevice");
-                            return;
+                            Logger.WriteLog(
+                                $"Произошла ошибка при попытки создания файлов {ex.Message}, подробности {ex.StackTrace}",
+                                "ConfigurateDevice");
+                            if (!ssh.IsConnected) ssh.Connect();
+                            command = ssh.CreateCommand("sudo rm -f -r .config/autostart\n");
+                            try
+                            {
+                                command.Execute();
+                            }
+                            catch (SshException sshex)
+                            {
+                                Logger.WriteLog(
+                                    $"Произошла ошибка при попытки удаления папки {ex.Message}, подробности {ex.StackTrace}",
+                                    "ConfigurateDevice");
+                                return;
+                            }
+
+                            command = ssh.CreateCommand("mkdir .config/autostart\n");
+                            try
+                            {
+                                command.Execute();
+                            }
+                            catch (SshException sshexep)
+                            {
+                                Logger.WriteLog(
+                                    $"Произошла ошибка при попытки создания папки {ex.Message}, подробности {ex.StackTrace}",
+                                    "ConfigurateDevice");
+                                return;
+                            }
+
+                            try
+                            {
+                                sftp.AppendAllLines(".config/autostart/chromium.desktop", text);
+                            }
+                            catch (SftpPermissionDeniedException sftpError)
+                            {
+                                Logger.WriteLog(
+                                    $"Произошла ошибка при попытки добавления данных в файл {ex.Message}, подробности {ex.StackTrace}",
+                                    "ConfigurateDevice");
+                                return;
+                            }
                         }
                     }
+
+                    if (!ssh.IsConnected)
+                        ssh.Connect();
+                    command = ssh.CreateCommand("sudo reboot now\n", Encoding.UTF8);
+                    try
+                    {
+                        command.Execute();
+                    }
+                    catch (SshConnectionException ex)
+                    {
+                        Logger.WriteLog($"Выполнена перезагрузка устройства {ipAddressDevice}", "ConfigurateDevice");
+                        return;
+                    }
                 }
-                if (!ssh.IsConnected)
-                    ssh.Connect();
-                command = ssh.CreateCommand("sudo reboot now\n", Encoding.UTF8);
-                try
+            }
+            catch (Exception)
+            {
+                if (string.Equals(station.InformationTable.PasswordDevice, "$olnechniKrug2019"))
                 {
-                    command.Execute();
+                    manager.ChangePassword(station, "$olnechniKrug");
                 }
-                catch (SshConnectionException ex)
+                else
                 {
-                    Logger.WriteLog($"Выполнена перезагрузка устройства {ipAddressDevice}", "ConfigurateDevice");
-                    return;
+                    manager.ChangePassword(station, "$olnechnikrug2019");
                 }
             }
         }

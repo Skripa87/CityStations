@@ -18,7 +18,7 @@ namespace CityStations.Models
             EndStation = stationForecast.Where;
             TimePredict = stationForecast.Arrt != null
                         ? (((int)stationForecast.Arrt / 60) == 0
-                          ? "1"
+                          ? "Прибывает..."
                           : ((int)stationForecast.Arrt / 60).ToString())
                         : "";
             TypeBus = string.Equals(stationForecast.Rtype.ToUpperInvariant(), "Т", new StringComparison())
@@ -38,7 +38,7 @@ namespace CityStations.Models
             EndStation = forecastItem.whereGo;
             TimePredict = forecastItem.arrTime!= null
                         ? (((int)forecastItem.arrTime / 60) == 0
-                            ? "1"
+                            ? "Прибывает..."
                             : ((int)forecastItem.arrTime / 60).ToString())
                         : "";
             TypeBus = string.Equals(forecastItem.type.ToUpperInvariant(),"Т",new StringComparison())
