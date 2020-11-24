@@ -1,64 +1,95 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Web;
+using System.Net.NetworkInformation;
 
 namespace CityStations.Models
 {
-    
-    public enum AnaliticFunctionality { NORMAL_WORK, BAD_WORK, NOT_WORK}
-    public class MonitoringViewModel
+
+    public enum Status { NormalWork, BadWork, NotWork }
+    public class MonitoringViewModel: IComparable
     {
         public string StationId { get; set; }
+        public string Address { get; set; }
         public string StationNameAndDescription { get; set; }
-        public string ForecastSource { get; set; }
-        public string LastStationActivity { get; set; }
-        public string AnaliticFunctionalityString { get; set; }
-        public AnaliticFunctionality AnaliticFunctionality { get; set; }
+        public string PingTest { get; set; }
+        public string StatusDescription { get; set; }
+        public Status Status { get; set; }
         public string LastError { get; set; }
 
-        public MonitoringViewModel(StationModel station, List<Event> eventsByStation, List<Event> errorEvents)
+        private bool TestPing(string ipAddress)
         {
-            StationId = station?.Id ?? "";
-            StationNameAndDescription = $"{station?.Name ?? ""} {station?.Description ?? ""}";
-            ForecastSource = string.Equals(station?.Id ?? "0", "0", new StringComparison())
-                ? (string.IsNullOrEmpty(station?.IdForRnis)
-                    ? "Нет поставщика данных"
-                    : "Поставщиком является только РНИС")
-                : (string.IsNullOrEmpty(station?.IdForRnis)
-                    ? "Поставщик Умный транспорт"
-                    : "Данные получены от Умного транспорта и РНИС");
-            var lastEventDateTime = eventsByStation?.OrderBy(e => e.Date)
-                                                   .LastOrDefault()
-                                                   ?.Date ?? DateTime.MinValue;
-            if (DateTime.Equals(lastEventDateTime, DateTime.MinValue)|| DateTime.Now - lastEventDateTime > TimeSpan.FromMinutes(5)) 
+            using (var ping = new Ping())
             {
-                AnaliticFunctionalityString = "Табло не работает(мин. 1 день)";
-                AnaliticFunctionality = AnaliticFunctionality.NOT_WORK;
-                lastEventDateTime = errorEvents.OrderBy(e=>e.Date).LastOrDefault()
-                                        ?.Date ?? DateTime.MinValue;
-                LastStationActivity = lastEventDateTime.ToString($"yyyy/MM/dd HH:mm:ss", new CultureInfo("All"));
+                var timeout = 120;
+                var reply = ping.Send(ipAddress, timeout);
+                return reply?.Status == IPStatus.Success;
             }
-            else if(DateTime.Now - lastEventDateTime > TimeSpan.FromSeconds(60.0) && DateTime.Now - lastEventDateTime < TimeSpan.FromMinutes(5))
+        }
+
+        public MonitoringViewModel(StationModel station)
+        {
+            var now = DateTime.Now;
+            if (station == null) return;
+            var rootIp = station.RouterIp;
+            StationId = station.Id ?? "";
+            Address =$"{station.DistrictOfTheCity ?? ""} ул. {station.Street ?? ""} д. {station.NumberNearHouse ?? ""}";
+            StationNameAndDescription = $"{station.Name ?? ""} {station.Description ?? ""}";
+            var ip = station.InformationTable
+                            .IpDevice;
+            if (string.IsNullOrEmpty(ip))
             {
-                AnaliticFunctionalityString = "Есть проблемы!";
-                AnaliticFunctionality = AnaliticFunctionality.BAD_WORK;
-                lastEventDateTime = errorEvents.OrderBy(e => e.Date).LastOrDefault()
-                                        ?.Date ?? DateTime.MinValue;
-                LastStationActivity = lastEventDateTime.ToString($"yyyy/MM/dd HH:mm:ss", new CultureInfo("All"));
+                PingTest = "НЕ УСТАНОВЛЕН IP";
+                StatusDescription = "УСТАНОВИТЕ IP АДРЕС УСТРОЙСТВА";
+                Status = Status.BadWork;
             }
-            else if (DateTime.Now - lastEventDateTime < TimeSpan.FromSeconds(60.0))
+            else
             {
-                AnaliticFunctionalityString = "Табло работает нормально!";
-                AnaliticFunctionality = AnaliticFunctionality.NORMAL_WORK;
-                LastStationActivity = lastEventDateTime.ToString($"yyyy/MM/dd HH:mm:ss", new CultureInfo("All"));
+                PingTest = TestPing(ip)
+                         ? "OK"
+                         : "NOT_WORK";
+                var manager = new ContextManager();
+                if (string.Equals(PingTest, "OK", new StringComparison()))
+                {
+                    var events = manager.GetActulEvents(station.Id);
+                    events.Reverse();
+                    var lastEvent = events.FirstOrDefault();
+                    if (lastEvent != null && (now - lastEvent.Date).TotalSeconds <= 60)
+                    {
+                        StatusDescription = "ВСЕ РАБОТАЕТ";
+                        Status = Status.NormalWork;
+                    }
+                    else
+                    {
+                        StatusDescription = "ПРОБЛЕМЫ В РАБОТЕ (НУЖНА ПРОВЕРКА)";
+                        Status = Status.BadWork;
+                    }
+                }
+                else
+                {
+                    Status = Status.NotWork;
+                    StatusDescription = "НЕ РАБОТАЕТ";
+                    if (!(string.IsNullOrEmpty(rootIp) || (string.Equals(rootIp, "0.0.0.0", new StringComparison())) ||
+                          string.Equals(rootIp, "0", new StringComparison())))
+                    {
+                        var testFirst = TestPing(rootIp)
+                            ? "Проблемы с микроконтроллером табло"
+                            : "Отсутствует электричество";
+                        LastError = $"Нет связи. Возможные причины: {testFirst}" + '\n' + "Необходим выезд на место!";
+                    }
+                    else
+                    {
+                        LastError = $"Нет связи. Возможные причины: Ip корневого узла не назначен" + '\n' + "Устройство не отвечает, установите Ip корневого узла!";
+                    }
+                }
             }
-            LastError = errorEvents == null
-                      ? "Табло не работает!"
-                      : (errorEvents.Any()
-                         ? (errorEvents.LastOrDefault()?.Description ?? "")
-                         : "Без ошибок");
+        }
+        public int CompareTo(object obj)
+        {
+            return obj == null
+                ? -1
+                : (string.CompareOrdinal(
+                    StationNameAndDescription.ToUpperInvariant(),
+                    (((MonitoringViewModel)obj).StationNameAndDescription).ToUpperInvariant()));
         }
     }
 }

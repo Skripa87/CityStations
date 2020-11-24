@@ -18,8 +18,8 @@ namespace CityStations.Models
 
         public Event(string message, string initiator)
         {
-            Id = Guid.NewGuid()
-                     .ToString();
+            Date = DateTime.Now;
+            Id = $"{new TimeSpan(DateTime.MaxValue.Ticks - DateTime.Now.Ticks)}_{initiator}";
             EventType = message.ToUpperInvariant()
                                .Contains("ОШИБКА")
                       ? EventType.ERROR
@@ -27,7 +27,6 @@ namespace CityStations.Models
                                 .Contains("ВНИМАНИЕ")  
                          ? EventType.WARNING
                          : EventType.EVENT);
-            Date = DateTime.Now;
             Initiator = initiator;
             Description = message;
         }

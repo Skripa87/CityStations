@@ -1,16 +1,83 @@
 ﻿using CityStations.Models;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
+using CityStations.Models.StationForecast2020;
+using Newtonsoft.Json.Linq;
 
 namespace CityStations
 {
     public class ContextManager
     {
         private CityStationsDbContext db;
-            //this test
+        //this test
+
+        public void InsertAllStationInDatabase()
+        {
+            string result = null;
+            var contextManager = new ContextManager();
+            try
+            {
+                var http = new Uri($"http://bus45.ru/php/getStations.php?city=kurgan");
+                var request = (HttpWebRequest) WebRequest.Create(http);
+                using (var response = (HttpWebResponse) request.GetResponse())
+                using (var stream = response.GetResponseStream())
+                using (var reader = new StreamReader(stream ?? throw new InvalidOperationException()))
+                {
+                    try
+                    {
+                        result = reader.ReadToEnd();
+                    }
+                    catch (Exception e)
+                    {
+                        return;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return;
+            }
+            try
+            {
+                var jResult = JToken.Parse(result).ToObject<IEnumerable<Station>>();
+                if (jResult == null) return;
+                foreach (var item in (IEnumerable<Station>)jResult)
+                {
+                    db.Stations.Add(new StationModel(item));
+                }
+                try
+                {
+                    db.SaveChanges();
+                }
+                catch (System.Data.Entity.Validation.DbEntityValidationException dbEx)
+                {
+                    Exception raise = dbEx;
+                    foreach (var validationErrors in dbEx.EntityValidationErrors)
+                    {
+                        foreach (var validationError in validationErrors.ValidationErrors)
+                        {
+                            string message = $"{validationErrors.Entry.Entity}:{validationError.ErrorMessage}";
+                            // raise a new exception nesting
+                            // the current instance as InnerException
+                            raise = new InvalidOperationException(message, raise);
+                        }
+                    }
+                }
+
+            }
+            catch(Exception ex)
+            {
+                return;
+            }
+        }
+        
+        
         public ContextManager()
         {
             try
@@ -37,8 +104,8 @@ namespace CityStations
             var informationTable = db.InformationTables
                                      .Any(i => string.Equals(i.Id, station.InformationTable.Id))
                                  ? db.InformationTables
-                                     .FirstOrDefault(i=>string.Equals(i.Id,station.InformationTable.Id))
-                                 :null;
+                                     .FirstOrDefault(i => string.Equals(i.Id, station.InformationTable.Id))
+                                 : null;
             if (informationTable == null) return null;
             informationTable.PasswordDevice = password;
             try
@@ -245,7 +312,7 @@ namespace CityStations
                     .Where(s => s.Name
                                     .Trim(' ')
                                     .ToUpperInvariant()
-                                    .Contains(normalFinderString.Substring(0,normalFinderString.Length/2))
+                                    .Contains(normalFinderString.Substring(0, normalFinderString.Length / 2))
                                 || normalFinderString.Contains(s.Name
                                     .Trim(' ')
                                     .ToUpperInvariant()))
@@ -256,22 +323,22 @@ namespace CityStations
         public async Task<List<StationModel>> FindActiveStationOnNamePartAsync(string finderString)
         {
             if (string.IsNullOrEmpty(finderString)) return db.Stations
-                                                             .Any(s=>s.Active)
+                                                             .Any(s => s.Active)
                                                    ? await db.Stations
-                                                             .Where(s=>s.Active)
+                                                             .Where(s => s.Active)
                                                              .ToListAsync()
                                                              .ConfigureAwait(true)
                                                    : null;
             var normalFinderString = finderString.Trim(' ')
                                                  .ToUpperInvariant();
             var stations = db.Stations
-                             .Any(s=>s.Active)
+                             .Any(s => s.Active)
                          ? await db.Stations
                                    .ToListAsync()
                                    .ConfigureAwait(true)
                          : null;
-            return stations != null 
-                 ?( stations.Any(s => s.Name
+            return stations != null
+                 ? (stations.Any(s => s.Name
                                          .Trim(' ')
                                          .ToUpperInvariant()
                                          .Contains(normalFinderString)
@@ -430,7 +497,7 @@ namespace CityStations
         public List<Content> GetContents(string informationTableId)
         {
             return db.Contents
-                     .Any(i=>i.InformationTables.Select(s=>s.Id)
+                     .Any(i => i.InformationTables.Select(s => s.Id)
                                                 .Contains(informationTableId))
                    ? db.Contents
                        .Where(i => i.InformationTables.Select(s => s.Id)
@@ -620,9 +687,9 @@ namespace CityStations
                                      .FirstOrDefault(i => string.Equals(i.Id, station.InformationTable.Id))
                                  : null;
             if (informationTable == null) return;
-            informationTable.IpDevice = string.IsNullOrEmpty(informationTable.IpDevice) || !string.Equals(informationTable.IpDevice,ipAddress) 
+            informationTable.IpDevice = string.IsNullOrEmpty(informationTable.IpDevice) || !string.Equals(informationTable.IpDevice, ipAddress)
                              ? ipAddress
-                             :informationTable.IpDevice;
+                             : informationTable.IpDevice;
             try
             {
                 db.SaveChanges();
@@ -641,20 +708,26 @@ namespace CityStations
             }
         }
 
-        public void ChangeInformationTable(string informationTableId, InformationTable newInformationTable)
+        public void ChangeInformationTable(string stationId, InformationTable newInformationTable)
         {
-            var informationTable = db.InformationTables
-                                     .Any(i => i.Id == informationTableId)
-                                 ? db.InformationTables
-                                     .FirstOrDefault(i => i.Id == informationTableId)
-                                 : null;
-            if (informationTable == null || newInformationTable == null) return;
-            informationTable.HeightWithModule = newInformationTable.HeightWithModule;
-            informationTable.RowCount = newInformationTable.RowCount;
-            informationTable.WidthWithModule = newInformationTable.WidthWithModule;
-            informationTable.IpDevice = newInformationTable.IpDevice;
-            informationTable.PasswordDevice = newInformationTable.PasswordDevice;
-            informationTable.UserNameDevice = newInformationTable.UserNameDevice;
+            var station = db.Stations
+                            .Any(i => i.Id == stationId)
+                        ? db.Stations
+                            .FirstOrDefault(i => i.Id == stationId)
+                        : null;
+            if (station?.InformationTable == null || newInformationTable == null) return;
+            station.InformationTable
+                   .HeightWithModule = newInformationTable.HeightWithModule;
+            station.InformationTable
+                   .RowCount = newInformationTable.RowCount;
+            station.InformationTable
+                   .WidthWithModule = newInformationTable.WidthWithModule;
+            station.InformationTable
+                   .IpDevice = newInformationTable.IpDevice;
+            station.InformationTable
+                   .PasswordDevice = newInformationTable.PasswordDevice;
+            station.InformationTable
+                   .UserNameDevice = newInformationTable.UserNameDevice;
             try
             {
                 db.SaveChanges();
@@ -770,15 +843,15 @@ namespace CityStations
                 try
                 {
                     partOldEvents = oldEvents.GetRange(0, 100000);
-                    oldEvents.RemoveRange(0,100000);
+                    oldEvents.RemoveRange(0, 100000);
                 }
                 catch (Exception)
                 {
-                    var count = oldEvents.Count == 0 
+                    var count = oldEvents.Count == 0
                               ? 0
                               : oldEvents.Count - 1;
                     partOldEvents = oldEvents.GetRange(0, count);
-                    oldEvents.RemoveRange(0,count);
+                    oldEvents.RemoveRange(0, count);
                     marker = true;
                 }
                 db.Events.RemoveRange(partOldEvents);
@@ -804,22 +877,25 @@ namespace CityStations
 
         public List<Event> GetActulEvents()
         {
-            //var allEvents = GetEvents();
-            //if (allEvents == null) return new List<Event>();
-            //var currentDateTime = DateTime.Now;
-            //var currentDateTimeBeforeFiveMinuts = currentDateTime.Subtract(TimeSpan.FromMinutes(5.0));
-            //var actualEvents = 
-            //    db.Events
-            //      .Where(e => e.Date > currentDateTimeBeforeFiveMinuts && e.Date < currentDateTime);
-            //return actualEvents.ToList();
             return db.Events
-                     .Take(50000)
+                     .Take(10000)
+                     .OrderBy(o => o.Date)
                      .ToList();
         }
+
+        public List<Event> GetActulEvents(string stationId)
+        {
+            return db.Events
+                     .Take(10000)
+                     .Where(e => string.Equals(e.Initiator, stationId))
+                     .OrderBy(o => o.Date)
+                     .ToList();
+        }
+
         public List<Event> GetErrors()
         {
             return db.Events
-                     .Take(50000)
+                     .Take(10000)
                      .ToList()
                      .FindAll(e => e.EventType == EventType.ERROR);
         }
@@ -864,7 +940,7 @@ namespace CityStations
 
         public void SaveUserOption(UserOption userOption)
         {
-            if (userOption == null) return; 
+            if (userOption == null) return;
             var userOptionDb = db.UserOptions
                                  .Any(u => string.Equals(userOption.UserId, u.UserId, new StringComparison()))
                              ? db.UserOptions
@@ -874,6 +950,81 @@ namespace CityStations
             userOptionDb.GroupByState = userOption.GroupByState;
             userOptionDb.OnlyActiveStations = userOption.OnlyActiveStations;
             userOptionDb.SelectedSortParametrs = userOption.SelectedSortParametrs;
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (System.Data.Entity.Validation.DbEntityValidationException dbEx)
+            {
+                Exception raise = dbEx;
+                foreach (var validationErrors in dbEx.EntityValidationErrors)
+                {
+                    foreach (var validationError in validationErrors.ValidationErrors)
+                    {
+                        string message = $"{validationErrors.Entry.Entity}:{validationError.ErrorMessage}";
+                        raise = new InvalidOperationException(message, raise);
+                    }
+                }
+            }
+        }
+
+        public void CheckIpRootDeviceStatus()
+        {
+            var stations = db.Stations
+                .Any(s => s.Active)
+                ? db.Stations
+                    .Where(s => s.Active).ToList()
+                : null;
+            if (stations == null) return;
+            foreach (var station in stations)
+            {
+                var ip = station?.InformationTable?.IpDevice ?? "";
+                var postLastPoint = ip.LastIndexOf('.');
+                var lastPartIp = ip.Substring(postLastPoint + 1, ip.Length - 1 - postLastPoint);
+                var numberLastPartIp = int.TryParse(lastPartIp, out var number)
+                    ? (number - 1 < 0 ? 0 : number - 1).ToString()
+                    : "0";
+                var stationBase = db.Stations.Any(s => string.Equals(s.Id, station.Id))
+                    ? db.Stations.FirstOrDefault(s => string.Equals(s.Id, station.Id))
+                    : null;
+                if (stationBase != null)
+                {
+                    stationBase.RouterIp = ip.Substring(0, postLastPoint + 1) + numberLastPartIp;
+                }
+            }
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (System.Data.Entity.Validation.DbEntityValidationException dbEx)
+            {
+                Exception raise = dbEx;
+                foreach (var validationErrors in dbEx.EntityValidationErrors)
+                {
+                    foreach (var validationError in validationErrors.ValidationErrors)
+                    {
+                        string message = $"{validationErrors.Entry.Entity}:{validationError.ErrorMessage}";
+                        raise = new InvalidOperationException(message, raise);
+                    }
+                }
+            }
+        }
+
+        public void SetStationAddress(Address address, string stationId)
+        {
+            if (string.IsNullOrEmpty(stationId) || address == null) return;
+            var station = db.Stations
+                            .Any(s => string.Equals(s.Id, stationId))
+                        ? db.Stations
+                            .FirstOrDefault(s => string.Equals(s.Id, stationId))
+                        : null;
+            if (station == null) return;
+            station.Street = string.IsNullOrEmpty(station.Street)
+                           ? (address.Street ?? "")
+                           : station.Street;
+            station.NumberNearHouse = string.IsNullOrEmpty(station.NumberNearHouse)
+                                    ? (address.NumberHouse ?? "")
+                                    : station.NumberNearHouse;
             try
             {
                 db.SaveChanges();

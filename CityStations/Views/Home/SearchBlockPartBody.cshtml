@@ -4,7 +4,7 @@
             <thead class="fixedHeader">
                 <tr>
                     <th class="th-header-table-1">#</th>
-                    <th class="th-header-table-4">Район</th>
+                    <th class="th-header-table-4">Андрес</th>
                     <th class="th-header-table-3">Наименование</th>
                     <th class="th-header-table-2">Идентификатор</th>
                     <th class="th-header-table-5">На карте</th>
@@ -18,9 +18,8 @@
                     {
                         <tr class="variant" onclick="selectSearchResult('@station.Id', '@(station.Name + " " + station.Description)')">
                             <th class="th-body-table-1">#@i</th>
-                            <th class="th-body-table-4">@station.DistrictOfTheCity</th>
-                            <th class="th-body-table-3">@(string.IsNullOrEmpty(station.NameOficial) 
-                                                        ? $"{station.Name} {station.Description}" : station.NameOficial)</th>
+                            <th class="th-body-table-4">@($"{station.DistrictOfTheCity ?? ""} ул. {station.Street ?? ""}, д. {station.NumberNearHouse ?? ""}" )</th>
+                            <th class="th-body-table-3">@(string.IsNullOrEmpty(station.NameOficial) ? $"{station.Name} {station.Description}" : station.NameOficial)</th>
                             <th class="th-body-table-2">@station.Id</th>
                             <th class="th-body-table-5">Geo</th>
                             <th class="th-body-table-8">Red</th>

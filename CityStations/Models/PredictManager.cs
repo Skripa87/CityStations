@@ -22,7 +22,7 @@ namespace CityStations.Models
             var station = manager.GetStation(idStation);
             if (station == null) return new List<StationForecast>();
             var stationForecasts = GetStationForecastGortrans(station.Id).ToList();
-            if (station.IdForRnis != null)
+            if (!string.IsNullOrEmpty(station.IdForRnis))
                 stationForecasts.AddRange(GetStationForecastForR(station.IdForRnis));
             stationForecasts.Sort();
             return stationForecasts;
@@ -36,9 +36,9 @@ namespace CityStations.Models
             if (station == null) return null;
             try
             {
-                var http = station.InformationTable?.ServiceType == null || station.InformationTable.ServiceType == ServiceType.OLD
-                         ? new Uri($"http://glonass.ufagortrans.ru/php/getStationForecasts.php?sid={idStation}&type=0&city=ufagortrans&info=12345&_=1517558480816")
-                         : new Uri($"http://176.118.208.48:5819/getForecasts.php?id={idStation}");
+                var http = new Uri($"http://176.118.208.48:7841/getForecasts.php?id={idStation}");
+                //station.InformationTable?.ServiceType == null || station.InformationTable.ServiceType == ServiceType.OLD
+                //? new Uri($"http://glonass.ufagortrans.ru/php/getStationForecasts.php?sid={idStation}&type=0&city=ufagortrans&info=12345&_=1517558480816")
                 var request = (HttpWebRequest)WebRequest.Create(http);
                 using (var response = (HttpWebResponse)request.GetResponse())
                 using (var stream = response.GetResponseStream())
@@ -61,21 +61,21 @@ namespace CityStations.Models
 
             try
             {
-                if (station.InformationTable?.ServiceType == null ||
-                    station.InformationTable?.ServiceType == ServiceType.OLD)
-                {
-                    var jResult = JToken.Parse(result).ToObject<IEnumerable<StationForecast>>()
-                        .ToList();
-                    jResult.RemoveAll(j => j.Arrt > 1201);
-                    return jResult;
-                }
-                else
-                {
+                //if (station.InformationTable?.ServiceType == null ||
+                //    station.InformationTable?.ServiceType == ServiceType.OLD)
+                //{
+                //    var jResult = JToken.Parse(result).ToObject<IEnumerable<StationForecast>>()
+                //        .ToList();
+                //    jResult.RemoveAll(j => j.Arrt > 1201);
+                //    return jResult;
+                //}
+                //else
+                //{
                     var jResult = JToken.Parse(result).ToObject<Root>();
                     if(jResult == null) return new List<IForecast>();
                     jResult.forecasts.RemoveAll(j => j.arrTime > 1201);
                     return jResult.forecasts;
-                }
+                //}
             }
             catch (Exception ex)
             {

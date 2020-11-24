@@ -235,6 +235,7 @@
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
+    <Compile Include="Models\Address.cs" />
     <Compile Include="Models\BootstrapHtml.cs" />
     <Compile Include="Models\CityStationsDBContext.cs" />
     <Compile Include="Models\Clouds.cs" />
@@ -242,6 +243,7 @@
     <Compile Include="Models\Content.cs" />
     <Compile Include="Models\Coord.cs" />
     <Compile Include="Models\Event.cs" />
+    <Compile Include="Models\HeraldGeocoder.cs" />
     <Compile Include="Models\IContent.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\IForecast.cs" />
@@ -256,6 +258,16 @@
     <Compile Include="Models\JsonClassRnisService\GetTransportByCheckPoint\RouteType.cs" />
     <Compile Include="Models\JsonClassRnisService\GetTransportByCheckPoint\Stop.cs" />
     <Compile Include="Models\JsonClassRnisService\GetTransportByCheckPoint\Type.cs" />
+    <Compile Include="Models\JsonGoogleMapsGeocoder\AddressComponent.cs" />
+    <Compile Include="Models\JsonGoogleMapsGeocoder\Bounds.cs" />
+    <Compile Include="Models\JsonGoogleMapsGeocoder\Example.cs" />
+    <Compile Include="Models\JsonGoogleMapsGeocoder\Geometry.cs" />
+    <Compile Include="Models\JsonGoogleMapsGeocoder\Location.cs" />
+    <Compile Include="Models\JsonGoogleMapsGeocoder\Northeast.cs" />
+    <Compile Include="Models\JsonGoogleMapsGeocoder\PlusCode.cs" />
+    <Compile Include="Models\JsonGoogleMapsGeocoder\Result.cs" />
+    <Compile Include="Models\JsonGoogleMapsGeocoder\Southwest.cs" />
+    <Compile Include="Models\JsonGoogleMapsGeocoder\Viewport.cs" />
     <Compile Include="Models\Main.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
     <Compile Include="Models\MassiveConfigureDevicePart.cs" />
@@ -676,7 +688,7 @@
           <SaveServerSettingsInUserFile>True</SaveServerSettingsInUserFile>
         </WebProjectProperties>
       </FlavorProperties>
-      <UserProperties libman_1json__JsonSchema="" content_4bootstrap_1min_1css_1map__JsonSchema="" />
+      <UserProperties content_4bootstrap_1min_1css_1map__JsonSchema="" libman_1json__JsonSchema="" />
     </VisualStudio>
   </ProjectExtensions>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

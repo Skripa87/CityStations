@@ -17,10 +17,11 @@ namespace CityStations.Models
         public double Lng { get; set; }
         public bool Type { get; set; }
         public bool Active { get; set; }
+        public string RouterIp { get; set; }
         public virtual InformationTable InformationTable { get; set; }
 
         public StationModel() { }
-        public StationModel(Station station )
+        public StationModel(Station station)
         {
             Id = station.id;
             Name = station.name;
@@ -30,14 +31,14 @@ namespace CityStations.Models
                 Lat = Convert.ToDouble(station.lat.Substring(0, 2) + "." + station.lat.Substring(2, station.lat.Length - 2));
                 Lng = Convert.ToDouble(station.lng.Substring(0, 2) + "." + station.lng.Substring(2, station.lng.Length - 2));
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Lat = Convert.ToDouble(station.lat.Substring(0, 2) + "," + station.lat.Substring(2, station.lat.Length - 2));
                 Lng = Convert.ToDouble(station.lng.Substring(0, 2) + "," + station.lng.Substring(2, station.lng.Length - 2));
                 Logger.WriteLog(
-                    $"Ошибка {e.Message}, внутренне исключение {e.InnerException}, источник возникновения {e.Source}, подробности {e.StackTrace}",Id);
+                    $"Ошибка {e.Message}, внутренне исключение {e.InnerException}, источник возникновения {e.Source}, подробности {e.StackTrace}", Id);
             }
-            Type = string.Equals(station.type,"1");
+            Type = string.Equals(station.type, "1");
             Active = false;
         }
 
@@ -47,7 +48,7 @@ namespace CityStations.Models
                 ? -1
                 : (string.CompareOrdinal(
                     $"{(string.IsNullOrEmpty(NameOficial) ? Name : NameOficial)} {Description}".ToUpperInvariant(),
-                    ($"{(string.IsNullOrEmpty(((StationModel) obj).NameOficial) ? ((StationModel) obj).Name : ((StationModel) obj).NameOficial)} {Description}".ToUpperInvariant())));
+                    ($"{(string.IsNullOrEmpty(((StationModel)obj).NameOficial) ? ((StationModel)obj).Name : ((StationModel)obj).NameOficial)} {Description}".ToUpperInvariant())));
+        }
     }
-    }      
 }

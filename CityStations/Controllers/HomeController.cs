@@ -55,6 +55,8 @@ namespace CityStations.Controllers
         [HttpGet]
         public ActionResult Index()
         {
+            //_manager = new ContextManager();
+            //_manager.InsertAllStationInDatabase();
             ViewData["MyAcc"] = User?.Identity
                                     ?.Name == "skripinalexey1987@gmail.com";
             if (User != null)
@@ -97,15 +99,14 @@ namespace CityStations.Controllers
                                     ?.Name == "skripinalexey1987@gmail.com";
             var userId = User?.Identity?.GetUserId() ?? "";
             _manager = new ContextManager();
-            CurrentUserOption = (CurrentUserOption ?? _manager.GetUserOptions(userId)) 
-                                                   ?? _manager.CreateUserOption(userId,false,false,"");
+            CurrentUserOption = (CurrentUserOption ?? _manager.GetUserOptions(userId))
+                                                   ?? _manager.CreateUserOption(userId, false, false, "");
             var stations = _stations ?? _manager.GetStations();
             var searchPart = new SearchBlockPartViewModel(CurrentUserOption.OnlyActiveStations,
                                                           CurrentUserOption.GroupByState,
                                                           stations,
                                                           CurrentUserOption.SelectedSortParametrs);
             ViewData["searchPart"] = searchPart;
-            //_manager.CheckAllAccessCodeInInformationTable();
             return View();
         }
 
@@ -116,7 +117,7 @@ namespace CityStations.Controllers
         {
             _manager = new ContextManager();
             var userOption = _manager.GetUserOptions(User.Identity
-                                                         .GetUserId())  
+                                                         .GetUserId())
                           ?? _manager.CreateUserOption(User.Identity
                                                            .GetUserId(), false, false, "");
             var stations = _stations ?? _manager.GetStations();
@@ -199,15 +200,14 @@ namespace CityStations.Controllers
             {
                 _stations.RemoveAll(s => string.Equals(s.Id, stationId, new StringComparison()));
                 var contextManager = new ContextManager();
-                //contextManager.SetIpAddressDevice(stationId, ip);
-                contextManager.ChangeInformationTable(informationTableId, new InformationTable()
+                contextManager.ChangeInformationTable(stationId, new InformationTable()
                 {
                     HeightWithModule = heightWithModules,
                     RowCount = rowCount,
                     WidthWithModule = widthWithModules,
                     UserNameDevice = userName,
                     PasswordDevice = password,
-                    IpDevice =  ip
+                    IpDevice = ip
                 });
                 var station = contextManager.GetStation(stationId);
                 _stations.Add(station);
@@ -299,7 +299,7 @@ namespace CityStations.Controllers
                 _manager = new ContextManager();
                 var station = _manager.ActivateInformationTable(stationId);
                 _moduleTypes = _manager.GetModuleTypes();
-                Station = new StationViewModel(station, _moduleTypes, _contentTypes,(_moduleTypes?.FirstOrDefault()?.Id ?? ""));
+                Station = new StationViewModel(station, _moduleTypes, _contentTypes, (_moduleTypes?.FirstOrDefault()?.Id ?? ""));
                 InformationTableViewModel = Station?.OptionsAndPreviewModel
                                                    ?.InformationTablePreview;
                 _manager = null;
@@ -544,7 +544,7 @@ namespace CityStations.Controllers
 
         [HttpPost]
         [Authorize]
-        //[ValidateAntiForgeryToken]
+        [ValidateAntiForgeryToken]
         public ActionResult Monitoring(string mode)
         {
             List<MonitoringViewModel> model = new List<MonitoringViewModel>();
@@ -552,17 +552,30 @@ namespace CityStations.Controllers
             {
                 _manager = new ContextManager();
                 var stations = _manager.GetActivStations();
-                //_manager.RemoveOldEvents();
-                var eventsByFiveMinuts = _manager.GetActulEvents();
-                var errorEvents = _manager.GetErrors();
-                foreach (var station in stations)
+                foreach (var item in stations)
                 {
-                    var events = eventsByFiveMinuts.FindAll(e => string.Equals(e.Initiator, station?.Id, new StringComparison()));
-                    var eventsE =
-                        errorEvents.FindAll(e => string.Equals(e.Initiator, station.Id, new StringComparison()));
-                    var monitoring = new MonitoringViewModel(station, events, eventsE);
-                    model.Add(monitoring);
+                    if (string.IsNullOrEmpty(item.Name) || string.Equals(item.Name
+                                                                               .Trim()
+                                                                               .ToUpperInvariant(), "ERROR",new StringComparison())) continue;
+                    model.Add(new MonitoringViewModel(item));
                 }
+                ViewData["fullCount"] = model.Count;
+                ViewData["notWork"] = model.Count(m=>m.Status == Status.NotWork).ToString();
+                ViewData["normalWork"] = model.Count(m=>m.Status == Status.NormalWork).ToString();
+                ViewData["badWork"] = model.Count(m=>m.Status == Status.BadWork).ToString();
+                if (string.Equals(mode, "normal_work", new StringComparison()))
+                {
+                    model.RemoveAll(f => f.Status != Status.NormalWork);
+                }
+                else if(string.Equals(mode, "bad_work", new StringComparison()))
+                {
+                    model.RemoveAll(f => f.Status != Status.BadWork);
+                }
+                else if(string.Equals(mode, "not_work",new StringComparison()))
+                {
+                    model.RemoveAll(f => f.Status != Status.NotWork);
+                }
+                model.Sort();
                 return View(model);
             }
             catch (Exception ex)
@@ -847,9 +860,9 @@ namespace CityStations.Controllers
             {
                 foreach (var forecast in predictNotObject)
                 {
-                    var item = (StationForecast) forecast;
+                    var item = (StationForecast)forecast;
                     var time = item.Arrt != null
-                        ? (((int) item.Arrt / 60) == 0 ? "1" : ((int) item.Arrt / 60).ToString())
+                        ? (((int)item.Arrt / 60) == 0 ? "1" : ((int)item.Arrt / 60).ToString())
                         : "";
                     var resultTime = "";
                     switch (time)
@@ -924,7 +937,7 @@ namespace CityStations.Controllers
             {
                 foreach (var forecast in predictNotObject)
                 {
-                    var item = (ForecastsItem) forecast;
+                    var item = (ForecastsItem)forecast;
                     var time = item.arrTime != null
                         ? (((int)item.arrTime / 60) == 0 ? "1" : ((int)item.arrTime / 60).ToString())
                         : "";
@@ -1047,9 +1060,9 @@ namespace CityStations.Controllers
             {
                 foreach (var forecast in predictNotObject)
                 {
-                    var item = (StationForecast) forecast;
+                    var item = (StationForecast)forecast;
                     var time = item.Arrt != null
-                        ? (((int) item.Arrt / 60) == 0 ? "1" : ((int) item.Arrt / 60).ToString())
+                        ? (((int)item.Arrt / 60) == 0 ? "1" : ((int)item.Arrt / 60).ToString())
                         : "";
                     var resultTime = "";
                     switch (time)
@@ -1126,7 +1139,7 @@ namespace CityStations.Controllers
             {
                 foreach (var forecast in predictNotObject)
                 {
-                    var item = (ForecastsItem) forecast;
+                    var item = (ForecastsItem)forecast;
                     var time = item.arrTime != null
                         ? (((int)item.arrTime / 60) == 0 ? "1" : ((int)item.arrTime / 60).ToString())
                         : "";
@@ -1202,7 +1215,7 @@ namespace CityStations.Controllers
                 }
             }
 
-            text = predictNotObject.Count > 0 
+            text = predictNotObject.Count > 0
                  ? text + " ."
                  : text + "Информация о прибытии транспорта на текущий момент осутствует!";
             HttpClient client = new HttpClient();

@@ -17,15 +17,15 @@
     font-weight: 600;
     color: red;
 }
-.functionality_BAD_WORK {
+.functionality_BadWork {
     background-color: coral;
 }
 
-.functionality_NOT_WORK {
+.functionality_NotWork {
     background-color: crimson;
 }
 
-.functionality_NORMAL_WORK {
+.functionality_NormalWork {
     background-color: chartreuse;
 }
 

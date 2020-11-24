@@ -10,66 +10,63 @@
                 <thead class="fixedHeader">
                     <tr>
                         <th width="5%">#</th>
+                        <th width="20%">Адрес</th>
                         <th width="20%">Наименование</th>
-                        <th width="20%">Источник прогнозов</th>
-                        <th width="20%">Последняя активность остановки</th>
-                        <th width="20%">Анализ функиональности</th>
-                        <th width="15%">Последняя ошибка</th>
+                        <th width="10%">PING тест</th>
+                        <th width="10%">Итог проверки</th>
+                        <th width="15%">Причина, совет по устранению</th>
                     </tr>
                 </thead>
                 <tbody id="tableBodyId" class="scrollContent">
                     @{
                         var i = 1;
-                        var normalWork = 0;
-                        var problemWork = 0;
-                        var notWork = 0;
                         foreach (var station in Model)
                         {
-                            <tr class="variant functionality_@station.AnaliticFunctionality.ToString()" onclick="selectSearchResult('@station.StationId', '@station.StationNameAndDescription')">
+                            <tr class="variant functionality_@station.Status.ToString()" onclick="selectSearchResult('@station.StationId', '@station.StationNameAndDescription')">
                                 <th width="5%">#@i</th>
+                                <th width="20%">@station.Address</th>
                                 <th width="20%">@station.StationNameAndDescription</th>
-                                <th width="20%">@station.ForecastSource</th>
-                                <th width="20%">@station.LastStationActivity</th>
-                                <th width="20%">@station.AnaliticFunctionalityString</th>
+                                <th width="10%">@station.PingTest</th>
+                                <th width="10%">@station.StatusDescription</th>
                                 <th width="15%">@station.LastError</th>
                             </tr>
-                            switch (station.AnaliticFunctionality)
-                            {
-                                case AnaliticFunctionality.NORMAL_WORK:
-                                    {
-                                        normalWork++;
-                                    }
-                                    break;
-                                case AnaliticFunctionality.BAD_WORK:
-                                    {
-                                        problemWork++;
-                                    }
-                                    break;
-                                case AnaliticFunctionality.NOT_WORK:
-                                    {
-                                        notWork++;
-                                    }
-                                    break;
-                            }
                             i++;
                         }
                     }
                 </tbody>
                 <tfoot>
                     <tr>
-                        <th width="100%">На дату @DateTime.Now.ToString("yyyy-MM-dd") общее число активированных информационных табло: - @i</th>
+                        <th width="100%">На дату @DateTime.Now.ToString("yyyy-MM-dd") общее число активированных информационных табло: - @ViewData["fullCount"]</th>
                         <th width="0%"></th>
                     </tr>
                     <tr>
-                        <th width="80%">Функционируют @normalWork информационных табло</th>
+                        <th width="80%">
+                            @using (Html.BeginForm("Monitoring", "Home", new { mode = "normal_work" }, FormMethod.Post))
+                            {
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn-link"> Функционируют @ViewData["normalWork"] информационных табло </button>
+                            }
+                        </th>
                         <th width="20%"></th>
                     </tr>
                     <tr>
-                        <th width="80%">Проблемы с функционированием замечены у @problemWork информационных табло</th>
+                        <th width="80%">
+                            @using (Html.BeginForm("Monitoring", "Home", new { mode = "bad_work" }, FormMethod.Post))
+                            {
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn-link"> Проблемы с функционированием замечены у @ViewData["badWork"] информационных табло </button>
+                            }
+                        </th>
                         <th width="20%"></th>
                     </tr>
                     <tr>
-                        <th width="80%">Не работает @notWork информационных табло</th>
+                        <th width="80%">
+                            @using (Html.BeginForm("Monitoring", "Home", new { mode = "not_work" }, FormMethod.Post))
+                            {
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn-link"> Не работает @ViewData["notWork"] информационных табло </button>
+                            }
+                        </th>
                         <th width="20%"></th>
                     </tr>
                 </tfoot>

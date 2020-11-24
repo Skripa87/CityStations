@@ -232,23 +232,23 @@ namespace CityStations.Models
             var manager = new ContextManager();
             var station = manager.GetStation(stationId);
             if (station == null) return null;
-            if (station?.InformationTable?.ServiceType == null ||
-                station?.InformationTable?.ServiceType == ServiceType.OLD)
-            {
-                foreach (var item in stationForecasts)
-                {
-                    var predict = new Predict((StationForecast)item);
-                    result.Add(predict);
-                }
-            }
-            else
-            {
+            //if (station?.InformationTable?.ServiceType == null ||
+            //    station?.InformationTable?.ServiceType == ServiceType.OLD)
+            //{
+            //    foreach (var item in stationForecasts)
+            //    {
+            //        var predict = new Predict((StationForecast)item);
+            //        result.Add(predict);
+            //    }
+            //}
+            //else
+            //{
                 foreach (var item in stationForecasts)
                 {
                     var predict = new Predict((ForecastsItem)item);
                     result.Add(predict);
                 }
-            }
+            //}
             return result.Count == 0 
                    ? (object)new WeatherDateTimeContent(TimeOut,StationId,IndexInContent)
                    :(result.Count >= rowCount

@@ -128,7 +128,7 @@
                         <li class="nav-item">
                             @using (@Html.BeginForm("Monitoring", "Home", FormMethod.Post))
                             {
-                                //@Html.AntiForgeryToken();
+                                @Html.AntiForgeryToken();
                                 <input name="mode" value="normal" hidden />
                                 <button class="btn btn-link nav-link" type="submit">
                                     <i class="mdi mdi-home menu-icon"></i>
