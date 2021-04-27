@@ -25,6 +25,12 @@ namespace CityStations
             }
         }
 
+        //public List<AspNetUser> GetUsers() 
+        //{
+        //    return db.AspNetUsers
+        //             .ToList();
+        //} 
+
         public List<Event> GetEvents()
         {
             return db.Events

@@ -55,13 +55,20 @@ namespace CityStations.Controllers
         [HttpGet]
         public ActionResult Index()
         {
-            ViewData["MyAcc"] = User?.Identity
-                                    ?.Name == "skripinalexey1987@gmail.com";
-            if (User != null)
+            using (var context = ApplicationDbContext.Create())
             {
-                return RedirectToAction("IndexAuthtorize");
+                if (!context.Users.Any())
+                {
+                    return RedirectToAction("Register", "Account");
+                }
+                ViewData["MyAcc"] = User?.Identity
+                                        ?.Name == "skripinalexey1987@gmail.com";
+                if (User != null)
+                {
+                    return RedirectToAction("IndexAuthtorize");
+                }
+                return View();
             }
-            return View();
         }
 
         [HttpPost]
@@ -97,8 +104,8 @@ namespace CityStations.Controllers
                                     ?.Name == "skripinalexey1987@gmail.com";
             var userId = User?.Identity?.GetUserId() ?? "";
             _manager = new ContextManager();
-            CurrentUserOption = (CurrentUserOption ?? _manager.GetUserOptions(userId)) 
-                                                   ?? _manager.CreateUserOption(userId,false,false,"");
+            CurrentUserOption = (CurrentUserOption ?? _manager.GetUserOptions(userId))
+                                                   ?? _manager.CreateUserOption(userId, false, false, "");
             var stations = _stations ?? _manager.GetStations();
             var searchPart = new SearchBlockPartViewModel(CurrentUserOption.OnlyActiveStations,
                                                           CurrentUserOption.GroupByState,
@@ -116,7 +123,7 @@ namespace CityStations.Controllers
         {
             _manager = new ContextManager();
             var userOption = _manager.GetUserOptions(User.Identity
-                                                         .GetUserId())  
+                                                         .GetUserId())
                           ?? _manager.CreateUserOption(User.Identity
                                                            .GetUserId(), false, false, "");
             var stations = _stations ?? _manager.GetStations();
@@ -207,7 +214,7 @@ namespace CityStations.Controllers
                     WidthWithModule = widthWithModules,
                     UserNameDevice = userName,
                     PasswordDevice = password,
-                    IpDevice =  ip
+                    IpDevice = ip
                 });
                 var station = contextManager.GetStation(stationId);
                 _stations.Add(station);
@@ -299,7 +306,7 @@ namespace CityStations.Controllers
                 _manager = new ContextManager();
                 var station = _manager.ActivateInformationTable(stationId);
                 _moduleTypes = _manager.GetModuleTypes();
-                Station = new StationViewModel(station, _moduleTypes, _contentTypes,(_moduleTypes?.FirstOrDefault()?.Id ?? ""));
+                Station = new StationViewModel(station, _moduleTypes, _contentTypes, (_moduleTypes?.FirstOrDefault()?.Id ?? ""));
                 InformationTableViewModel = Station?.OptionsAndPreviewModel
                                                    ?.InformationTablePreview;
                 _manager = null;
@@ -847,9 +854,9 @@ namespace CityStations.Controllers
             {
                 foreach (var forecast in predictNotObject)
                 {
-                    var item = (StationForecast) forecast;
+                    var item = (StationForecast)forecast;
                     var time = item.Arrt != null
-                        ? (((int) item.Arrt / 60) == 0 ? "1" : ((int) item.Arrt / 60).ToString())
+                        ? (((int)item.Arrt / 60) == 0 ? "1" : ((int)item.Arrt / 60).ToString())
                         : "";
                     var resultTime = "";
                     switch (time)
@@ -924,7 +931,7 @@ namespace CityStations.Controllers
             {
                 foreach (var forecast in predictNotObject)
                 {
-                    var item = (ForecastsItem) forecast;
+                    var item = (ForecastsItem)forecast;
                     var time = item.arrTime != null
                         ? (((int)item.arrTime / 60) == 0 ? "1" : ((int)item.arrTime / 60).ToString())
                         : "";
@@ -1047,9 +1054,9 @@ namespace CityStations.Controllers
             {
                 foreach (var forecast in predictNotObject)
                 {
-                    var item = (StationForecast) forecast;
+                    var item = (StationForecast)forecast;
                     var time = item.Arrt != null
-                        ? (((int) item.Arrt / 60) == 0 ? "1" : ((int) item.Arrt / 60).ToString())
+                        ? (((int)item.Arrt / 60) == 0 ? "1" : ((int)item.Arrt / 60).ToString())
                         : "";
                     var resultTime = "";
                     switch (time)
@@ -1126,7 +1133,7 @@ namespace CityStations.Controllers
             {
                 foreach (var forecast in predictNotObject)
                 {
-                    var item = (ForecastsItem) forecast;
+                    var item = (ForecastsItem)forecast;
                     var time = item.arrTime != null
                         ? (((int)item.arrTime / 60) == 0 ? "1" : ((int)item.arrTime / 60).ToString())
                         : "";
@@ -1202,7 +1209,7 @@ namespace CityStations.Controllers
                 }
             }
 
-            text = predictNotObject.Count > 0 
+            text = predictNotObject.Count > 0
                  ? text + " ."
                  : text + "Информация о прибытии транспорта на текущий момент осутствует!";
             HttpClient client = new HttpClient();

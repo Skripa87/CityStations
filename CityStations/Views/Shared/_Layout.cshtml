@@ -21,153 +21,157 @@
     @Scripts.Render("~/bundles/modernizr")
 </head>
 <body>
-    @if (Request.IsAuthenticated)
-    {
-        <div class="container-scroller">
-            <!-- partial:partials/_navbar.html -->
-            <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
-                <div class="navbar-brand-wrapper d-flex justify-content-center">
-                    <div class="navbar-brand-inner-wrapper d-flex justify-content-between align-items-center w-100">
-                        <a class="navbar-brand brand-logo" href="@Url.Action("IndexAuthtorize","Home",new { })"><img id="custom-navbar-brend" src="~/Content/Images/icons/icon-36x36.png" alt="logo" /> ГЕРОЛЬД</a>
-                        <a class="navbar-brand brand-logo-mini" href="@Url.Action("IndexAuthtorize","Home",new { })"><img src="~/Content/Images/icons/icon-36x36.png" alt="logo" /></a>
-                        <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
-                            <span class="mdi mdi-sort-variant"></span>
+    <div class="wrapper">
+        @if (Request.IsAuthenticated)
+        {
+            <div class="container-scroller">
+                <!-- partial:partials/_navbar.html -->
+                <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
+                    <div class="navbar-brand-wrapper d-flex justify-content-center">
+                        <div class="navbar-brand-inner-wrapper d-flex justify-content-between align-items-center w-100">
+                            <a class="navbar-brand brand-logo" href="@Url.Action("IndexAuthtorize","Home",new { })"><img id="custom-navbar-brend" src="~/Content/Images/icons/icon-36x36.png" alt="logo" /> ГЕРОЛЬД</a>
+                            <a class="navbar-brand brand-logo-mini" href="@Url.Action("IndexAuthtorize","Home",new { })"><img src="~/Content/Images/icons/icon-36x36.png" alt="logo" /></a>
+                            <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
+                                <span class="mdi mdi-sort-variant"></span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
+                        <ul class="navbar-nav mr-lg-4 w-100">
+                            <li class="nav-item nav-search d-none d-lg-block w-100">
+                                <div id="search-input-group" class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text" id="search">
+                                            <i class="mdi mdi-magnify"></i>
+                                        </span>
+                                    </div>
+                                    @using (Ajax.BeginForm("SearchBlockPartBody", "Home", new { }, new AjaxOptions()
+                                    {
+                                        UpdateTargetId = "searchBlockPartBodyId",
+                                        HttpMethod = "POST",
+                                        InsertionMode = InsertionMode.Replace
+                                    }, new { style = "float:left;min-width:98%" }))
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        <input id="searchBoxId" name="searchBoxText" type="search" class="form-control" placeholder="Поиск..." aria-label="search" aria-describedby="search" value="" onkeyup="findstart(event)">
+                                        <button id="searchBoxButton" type="submit" class="btn btn-default" hidden>Найти</button>
+                                    }
+                                </div>
+                            </li>
+                        </ul>
+                        <ul class="navbar-nav navbar-nav-right">
+                            <li class="nav-item dropdown mr-4">
+                                <a class="nav-link count-indicator dropdown-toggle d-flex align-items-center justify-content-center notification-dropdown" id="notificationDropdown" href="#" data-toggle="dropdown">
+                                    <i class="mdi mdi-bell mx-0"></i>
+                                    <span class="count"></span>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="notificationDropdown">
+                                    <p class="mb-0 font-weight-normal float-left dropdown-header">Оповещения</p>
+                                    <a class="dropdown-item">
+                                        <div class="item-thumbnail">
+                                            <div class="item-icon bg-success">
+                                                <i class="mdi mdi-information mx-0"></i>
+                                            </div>
+                                        </div>
+                                        <div class="item-content">
+                                            <h6 class="font-weight-normal">Ошибки приложения</h6>
+                                        </div>
+                                    </a>
+                                </div>
+                            </li>
+                            <li class="nav-item nav-profile dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" id="profileDropdown">
+                                    <span class="nav-profile-name">Здравствуйте! @User.Identity.Name</span>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="profileDropdown">
+                                    <a class="dropdown-item">
+                                        <i class="mdi mdi-settings text-primary"></i>
+                                        Настройки профиля
+                                    </a>
+                                    @using (@Html.BeginForm("LogOff", "Account", FormMethod.Post))
+                                    {
+                                        @Html.AntiForgeryToken();
+                                        <button class="btn btn-link nav-link dropdown-item" type="submit">
+                                            <span><i class="mdi mdi-logout text-primary"></i>Выход</span>
+                                        </button>
+                                    }
+                                </div>
+                            </li>
+                        </ul>
+                        <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button" data-toggle="offcanvas">
+                            <span class="mdi mdi-menu"></span>
                         </button>
                     </div>
-                </div>
-                <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
-                    <ul class="navbar-nav mr-lg-4 w-100">
-                        <li class="nav-item nav-search d-none d-lg-block w-100">
-                            <div id="search-input-group" class="input-group">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text" id="search">
-                                        <i class="mdi mdi-magnify"></i>
-                                    </span>
-                                </div>
-                                @using (Ajax.BeginForm("SearchBlockPartBody", "Home", new { },new AjaxOptions()
-                                {
-                                    UpdateTargetId = "searchBlockPartBodyId",
-                                    HttpMethod = "POST",
-                                    InsertionMode = InsertionMode.Replace
-                                }, new { style = "float:left;min-width:98%" }))
-                                {
-                                    @Html.AntiForgeryToken()
-                                    <input id="searchBoxId" name="searchBoxText" type="search" class="form-control" placeholder="Поиск..." aria-label="search" aria-describedby="search" value="" onkeyup="findstart(event)">
-                                    <button id="searchBoxButton" type="submit" class="btn btn-default" hidden>Найти</button>
-                                }
-                            </div>
-                        </li>
-                    </ul>
-                    <ul class="navbar-nav navbar-nav-right">
-                        <li class="nav-item dropdown mr-4">
-                            <a class="nav-link count-indicator dropdown-toggle d-flex align-items-center justify-content-center notification-dropdown" id="notificationDropdown" href="#" data-toggle="dropdown">
-                                <i class="mdi mdi-bell mx-0"></i>
-                                <span class="count"></span>
-                            </a>
-                            <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="notificationDropdown">
-                                <p class="mb-0 font-weight-normal float-left dropdown-header">Оповещения</p>
-                                <a class="dropdown-item">
-                                    <div class="item-thumbnail">
-                                        <div class="item-icon bg-success">
-                                            <i class="mdi mdi-information mx-0"></i>
-                                        </div>
-                                    </div>
-                                    <div class="item-content">
-                                        <h6 class="font-weight-normal">Ошибки приложения</h6>
-                                    </div>
-                                </a>
-                            </div>
-                        </li>
-                        <li class="nav-item nav-profile dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" id="profileDropdown">
-                                <span class="nav-profile-name">Здравствуйте! @User.Identity.Name</span>
-                            </a>
-                            <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="profileDropdown">
-                                <a class="dropdown-item">
-                                    <i class="mdi mdi-settings text-primary"></i>
-                                    Настройки профиля
-                                </a>
-                                <a class="dropdown-item">
-                                    <i class="mdi mdi-logout text-primary"></i>
-                                    Выход
-                                </a>
-                            </div>
-                        </li>
-                    </ul>
-                    <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button" data-toggle="offcanvas">
-                        <span class="mdi mdi-menu"></span>
-                    </button>
-                </div>
-            </nav>
-            <!-- partial -->
-            <div class="container-fluid page-body-wrapper">
-                <!-- partial:partials/_sidebar.html -->
-                <nav class="sidebar sidebar-offcanvas" id="sidebar">
-                    <ul class="nav">
-                        <li class="nav-item">
-                            @using (Ajax.BeginForm("SearchBlockPart", "Home", new { }, new AjaxOptions()
-                            {
-                                HttpMethod = "POST",
-                                UpdateTargetId = "wrapper",
-                                InsertionMode = InsertionMode.Replace,
-                            }, new { }))
-                            {
-                                @Html.AntiForgeryToken();
-                                <button class="btn btn-link nav-link" type="submit">
-                                    <i class="mdi mdi-home menu-icon"></i>
-                                    <span class="menu-title">Остановки города</span>
-                                </button>
-                            }
-
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="@Url.Action("RebootAllStations","Home")">
-                                <i class="fa fa-user-plus" aria-hidden="true"></i> <span class="menu-title"> Перезапустить все</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            @using (@Html.BeginForm("Monitoring", "Home", FormMethod.Post))
-                            {
-                                //@Html.AntiForgeryToken();
-                                <input name="mode" value="normal" hidden />
-                                <button class="btn btn-link nav-link" type="submit">
-                                    <i class="mdi mdi-home menu-icon"></i>
-                                    <span class="menu-title">Мониторинг</span>
-                                </button>
-                            }
-                        </li>
-                        <li class="nav-item">
-                            @using (@Html.BeginForm("MassiveConfigure", "Home", FormMethod.Post))
-                            {
-                                //@Html.AntiForgeryToken();
-                                <input name="mode" value="normal" hidden />
-                                <button class="btn btn-link nav-link" type="submit">
-                                    <i class="mdi mdi-home menu-icon"></i>
-                                    <span class="menu-title">Сетевые настройки</span>
-                                </button>
-                            }
-                        </li>
-                    </ul>
                 </nav>
-                <div id="main-panel" class="main-panel">
-                    <div id="wrapper" class="content-wrapper">
-                        @RenderBody()
+                <!-- partial -->
+                <div class="container-fluid page-body-wrapper">
+                    <!-- partial:partials/_sidebar.html -->
+                    <nav class="sidebar sidebar-offcanvas" id="sidebar">
+                        <ul class="nav">
+                            <li class="nav-item">
+                                @using (Ajax.BeginForm("SearchBlockPart", "Home", new { }, new AjaxOptions()
+                                {
+                                    HttpMethod = "POST",
+                                    UpdateTargetId = "wrapper",
+                                    InsertionMode = InsertionMode.Replace,
+                                }, new { }))
+                                {
+                                    @Html.AntiForgeryToken();
+                                    <button class="btn btn-link nav-link" type="submit">
+                                        <i class="mdi mdi-home menu-icon"></i>
+                                        <span class="menu-title">Остановки города</span>
+                                    </button>
+                                }
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="@Url.Action("RebootAllStations","Home")">
+                                    <i class="fa fa-user-plus" aria-hidden="true"></i> <span class="menu-title"> Перезапустить все</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                @using (@Html.BeginForm("Monitoring", "Home", FormMethod.Post))
+                                {
+                                    //@Html.AntiForgeryToken();
+                                    <input name="mode" value="normal" hidden />
+                                    <button class="btn btn-link nav-link" type="submit">
+                                        <i class="mdi mdi-home menu-icon"></i>
+                                        <span class="menu-title">Мониторинг</span>
+                                    </button>
+                                }
+                            </li>
+                            <li class="nav-item">
+                                @using (@Html.BeginForm("MassiveConfigure", "Home", FormMethod.Post))
+                                {
+                                    //@Html.AntiForgeryToken();
+                                    <input name="mode" value="normal" hidden />
+                                    <button class="btn btn-link nav-link" type="submit">
+                                        <i class="mdi mdi-home menu-icon"></i>
+                                        <span class="menu-title">Сетевые настройки</span>
+                                    </button>
+                                }
+                            </li>
+                        </ul>
+                    </nav>
+                    <div id="main-panel" class="main-panel wrapper">
+                        <div id="wrapper" class="content-wrapper content">
+                            @RenderBody()
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    }
-    else
-    {
-        <div id="body-contentId" class="container body-content">
-            @RenderBody()
-        </div>
-    }
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; @DateTime.Now.Year – ООО "Солнечный круг" - <a class="text-muted" href="#">Лицензионное соглашение</a>
-        </div>
-    </footer>
+        }
+        else
+        {
+            <div id="body-contentId" class="container body-content content">
+                @RenderBody()
+            </div>
+        }
+        <footer class="border-top footer text-muted">
+            <div class="container">
+                &copy; @DateTime.Now.Year – ООО "Солнечный круг" - <a class="text-muted" href="#">Лицензионное соглашение</a>
+            </div>
+        </footer>
+    </div>
     @Scripts.Render("~/bundles/jquery")
     @Scripts.Render("~/bundles/bootstrap")
     @Scripts.Render("~/bundles/ajax")

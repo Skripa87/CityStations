@@ -1,15 +1,35 @@
-﻿body {
-    display: flex;
-    flex-direction: column;
-    min-height:100%;
-    min-height: -webkit-fill-available;
-    line-height:1.3;
+﻿html {
+    height: 100%;
 }
 
-#custom-navbar-brend{
-    width:50px;
-    height:50px;
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    min-height: -webkit-fill-available;
+    line-height: 1.3;
+    height: 100%;
 }
+
+#custom-navbar-brend {
+    width: 50px;
+    height: 50px;
+}
+
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.content {
+    flex: 1 0 auto;
+}
+
+.footer {
+    flex: 0 0 auto;
+}
+
 .ufa {
     margin-top: -25px;
     margin-left: 57px;
@@ -17,6 +37,7 @@
     font-weight: 600;
     color: red;
 }
+
 .functionality_BAD_WORK {
     background-color: coral;
 }
@@ -46,7 +67,6 @@ thead.fixedHeader tr {
 thead.fixedHeader th {
     font-weight: normal;
     text-align: left
-
 }
 
 html > body tbody.scrollContent {
@@ -91,7 +111,7 @@ tbody.scrollContent tr.alternateRow td {
     padding-right: 15px;
     flex-grow: 1;
 }
- 
+
 /* Override the default bootstrap behavior where horizontal description lists 
    will truncate terms that are too long to fit in the left column 
 */
@@ -118,6 +138,7 @@ textarea {
     .login-header {
         font-size: 15px !important;
     }
+
     #main-panel {
         margin-left: 0 !important;
     }
@@ -140,7 +161,7 @@ textarea {
 }
 
 .box-for-button {
-    text-align:center;
+    text-align: center;
 }
 
 .fa-user-plus:before {
@@ -153,7 +174,7 @@ textarea {
 }
 
 .main-panel {
-     margin-left: 257px;
+    margin-left: 257px;
 }
 
 .info-input {
@@ -179,8 +200,9 @@ textarea {
     font-family: 'Play', sans-serif;
     margin-top: 5px;
 }
-.logon-info{
-    font-size:10px;
+
+.logon-info {
+    font-size: 10px;
 }
 
 .textAboutApp {
@@ -449,8 +471,8 @@ img.img-responsive.img240_120 {
     font-family: 'Play', sans-serif;
 }
 
-.table th{
-    font-weight:400;
+.table th {
+    font-weight: 400;
 }
 
 .left-col {
@@ -471,33 +493,41 @@ img.img-responsive.img240_120 {
 .th-header-table-1 {
     width: 50px;
 }
+
 .th-header-table-2 {
     width: 145px;
 }
+
 .th-header-table-3 {
     width: 250px;
 }
+
 .th-header-table-4 {
     width: 125px;
 }
+
 .th-header-table-5 {
     width: 68px;
 }
+
 .th-header-table-6 {
     width: 184px;
 }
+
 .th-header-table-7 {
     width: 134px;
 }
+
 .th-header-table-8 {
     width: 116px;
 }
+
 .th-body-table-1 {
     width: 103px;
 }
 
 .th-body-table-2 {
-    width:301px;
+    width: 301px;
 }
 
 .th-body-table-3 {
@@ -547,12 +577,15 @@ img.img-responsive.img240_120 {
 .m-th-body-table-2 {
     width: 372px;
 }
+
 .m-th-body-table-3 {
     width: 337px;
 }
+
 .m-th-body-table-4 {
     width: 339px;
 }
+
 .m-th-body-table-5 {
     width: 321px;
 }
