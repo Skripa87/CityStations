@@ -299,7 +299,7 @@ namespace CityStations.Controllers
         [Authorize]
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public ActionResult ActivateInformationTable(string stationId, string isActive)
+        public ActionResult ActivateInformationTable(string stationId, bool? isActive)
         {
             try
             {

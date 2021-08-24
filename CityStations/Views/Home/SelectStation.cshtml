@@ -37,7 +37,7 @@
                         </h3>
                     </div>
                 </div>
-                using (Html.BeginForm("ActivateInformationTable", "Home", new { stationId = Model.StationId }, FormMethod.Post, new { @class = "informationTable" }))
+                using (Html.BeginForm("ActivateInformationTable", "Home", new { stationId = Model.StationId, isActive = Model.Active }, FormMethod.Post, new { @class = "informationTable" }))
                 {
                     @Html.AntiForgeryToken()
                     <button class="btn btn-link" id="activateInformationTableButtonId" type="submit">Активировать информационное табло</button>

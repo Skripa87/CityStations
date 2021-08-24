@@ -346,6 +346,10 @@ h5.headerBox {
     }
 }
 
+.contentUp{
+    animation:tikerVertical 15s ease infinite;
+}
+
 /*.informationTableBlock {
     overflow: hidden;
 }*/
